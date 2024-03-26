@@ -1,6 +1,8 @@
-import numpy as np
 import math
+
+import numpy as np
 import pybullet as p
+
 
 class SnakeRobot:
     def __init__(self, length, client, base_position, base_orientation, mode="position") -> None:
@@ -23,7 +25,6 @@ class SnakeRobot:
         self.scaleStart = 1.0
         self.m_waveFront = 0.0
 
-		
     def set_motors(self, action):
         """Set joint motors
 
@@ -34,24 +35,24 @@ class SnakeRobot:
         for joint in range(self._client.getNumJoints(self._snakeID)):
             if self._mode == "torque":
                 self._client.setJointMotorControl2(self._snakeID,
-                                                    joint,
-                                                    p.TORQUE_CONTROL,
-                                                    force=action[joint])  # Apply torque to the motor
+                                                   joint,
+                                                   p.TORQUE_CONTROL,
+                                                   force=action[joint])  # Apply torque to the motor
             elif self._mode == "position":
                 self._client.setJointMotorControl2(self._snakeID,
-                                                    joint,
-                                                    p.POSITION_CONTROL,
-                                                    # Set servo to a postion
-                                                    targetPosition=action[joint],
-                                                    force=100,
-                                                    )
+                                                   joint,
+                                                   p.POSITION_CONTROL,
+                                                   # Set servo to a postion
+                                                   targetPosition=action[joint],
+                                                   force=100,
+                                                   )
             elif self._mode == "velocity":
                 self._client.setJointMotorControl2(self._snakeID,
-                                                    joint,
-                                                    p.POSITION_CONTROL,
-                                                    # Give certain velocity to servo
-                                                    targetVelocity=action[joint],
-                                                    maxVelocity=10)
+                                                   joint,
+                                                   p.POSITION_CONTROL,
+                                                   # Give certain velocity to servo
+                                                   targetVelocity=action[joint],
+                                                   maxVelocity=10)
 
     def get_state(self):
         """Returns the current state of the snake
@@ -94,18 +95,18 @@ class SnakeRobot:
         sphereRadius = 0.25
 
         colBoxId = self._client.createCollisionShape(p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius]
-        )
+                                                     halfExtents=[sphereRadius, sphereRadius, sphereRadius]
+                                                     )
 
         visualShapeIdRed = self._client.createVisualShape(p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-            rgbaColor=[ 1, 0, 0, 1],
-        )
+                                                          halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+                                                          rgbaColor=[1, 0, 0, 1],
+                                                          )
 
         visualShapeIdWhite = self._client.createVisualShape(p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-            rgbaColor=[0.949, 0.858, 0.670, 1],
-        )
+                                                            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+                                                            rgbaColor=[0.949, 0.858, 0.670, 1],
+                                                            )
 
         link_Masses = []
         linkCollisionShapeIndices = []
@@ -128,20 +129,19 @@ class SnakeRobot:
             linkInertialFrameOrientations.append([0, 0, 0, 1])
             indices.append(i)
             jointTypes.append(p.JOINT_REVOLUTE)
-            
-            
+
             if i % 2 == 0:
                 rotation_axis = [0, 0, 1]
             else:
                 rotation_axis = [1, 0, 0]
-            
+
             axis.append(rotation_axis)
-        
+
         # Draw Debug rotation axes
         # for i in range(1, self._length):
         #     joint_position = (np.array(linkPositions[i-1]) + np.array(linkPositions[i])) / 2
         #     joint_axis = axis[i]
-            
+
         #     axis_length = 0.5
         #     end_point = [
         #         joint_position[0] + axis_length * joint_axis[0],
@@ -207,7 +207,7 @@ class SnakeRobot:
 
             # map segment to phase
             phase = (self.m_waveFront - (segment + 1)
-                        * m_segmentLength) / m_waveLength
+                     * m_segmentLength) / m_waveLength
             phase -= math.floor(phase)
             phase *= math.pi * 2.0
 

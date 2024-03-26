@@ -38,6 +38,8 @@ for i in range(10000000):
         for contact in contacts:
             _, _, aId, bId, _, contactPosOnA, contactPosOnB, contactNormalOnB, *_ = contact
 
+    snake.get_joint_data()
+
     move = snake.generate_sin_move()
     snake.set_motors(move)
     # snake.set_motors(desired_joint_ang)

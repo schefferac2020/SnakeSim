@@ -27,9 +27,16 @@ desired_joint_ang = 0.5 * np.ones(10)
 for i in range(10000000):
     client.stepSimulation()
 
+    contacts = p.getContactPoints()
+    if contacts:
+        for contact in contacts:
+            _, _, aId, bId, _, contactPosOnA, contactPosOnB, contactNormalOnB, *_ = contact
+
     move = snake.generate_sin_move()
     snake.set_motors(move)
     # snake.set_motors(desired_joint_ang)
     # print("State is ", snake.get_state())
-    # time.sleep(1./240.)
+    import time
+
+    time.sleep(1. / 240.)
 client.disconnect()

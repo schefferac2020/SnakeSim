@@ -34,27 +34,32 @@ class SnakeRobot:
 
         for joint in range(self._client.getNumJoints(self._snakeID)):
             if self._mode == "torque":
-                self._client.setJointMotorControl2(self._snakeID,
-                                                   joint,
-                                                   p.TORQUE_CONTROL,
-                                                   force=action[joint])  # Apply torque to the motor
+                self._client.setJointMotorControl2(
+                    self._snakeID,
+                    joint,
+                    p.TORQUE_CONTROL,
+                    force=action[joint],
+                )  # Apply torque to the motor
             elif self._mode == "position":
-                self._client.setJointMotorControl2(self._snakeID,
-                                                   joint,
-                                                   p.POSITION_CONTROL,
-                                                   # Set servo to a postion
-                                                   targetPosition=action[joint],
-                                                   force=100,
-                                                   )
+                self._client.setJointMotorControl2(
+                    self._snakeID,
+                    joint,
+                    p.POSITION_CONTROL,
+                    # Set servo to a position
+                    targetPosition=action[joint],
+                    force=100,
+                )
             elif self._mode == "velocity":
-                self._client.setJointMotorControl2(self._snakeID,
-                                                   joint,
-                                                   p.POSITION_CONTROL,
-                                                   # Give certain velocity to servo
-                                                   targetVelocity=action[joint],
-                                                   maxVelocity=10)
+                self._client.setJointMotorControl2(
+                    self._snakeID,
+                    joint,
+                    p.POSITION_CONTROL,
+                    # Give certain velocity to servo
+                    targetVelocity=action[joint],
+                    maxVelocity=10,
+                )
 
-    def get_state(self):
+    def get_joint_data(self):
         """Returns the current state of the snake
 
         Returns:
@@ -64,8 +69,7 @@ class SnakeRobot:
         obs = np.array(position[:2])  # (snake x, snake y)
 
         joint_data = np.array(
-            self._client.getJointStates(self._snakeID, list(
-                range(self._client.getNumJoints(self._snakeID)))),
+            self._client.getJointStates(self._snakeID, list(range(self._client.getNumJoints(self._snakeID)))),
             dtype=object
         )
 
@@ -76,6 +80,9 @@ class SnakeRobot:
         obs = np.append(obs, joint_positions)
 
         return obs.astype(np.float32)
+
+    def get_imu_data(self):
+        pass
 
     def get_ids(self):
         """get snake id and client id
@@ -94,19 +101,22 @@ class SnakeRobot:
         mass = 0.06
         sphereRadius = 0.25
 
-        colBoxId = self._client.createCollisionShape(p.GEOM_BOX,
-                                                     halfExtents=[sphereRadius, sphereRadius, sphereRadius]
-                                                     )
+        colBoxId = self._client.createCollisionShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius]
+        )
 
-        visualShapeIdRed = self._client.createVisualShape(p.GEOM_BOX,
-                                                          halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-                                                          rgbaColor=[1, 0, 0, 1],
-                                                          )
+        visualShapeIdRed = self._client.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+            rgbaColor=[1, 0, 0, 1],
+        )
 
-        visualShapeIdWhite = self._client.createVisualShape(p.GEOM_BOX,
-                                                            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-                                                            rgbaColor=[0.949, 0.858, 0.670, 1],
-                                                            )
+        visualShapeIdWhite = self._client.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+            rgbaColor=[0.949, 0.858, 0.670, 1],
+        )
 
         link_Masses = []
         linkCollisionShapeIndices = []

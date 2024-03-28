@@ -17,9 +17,12 @@ class SnakeRobot:
         """
         self._length = length
         self._client = client
-        self._snakeID = self.create_snake(base_position, base_orientation)
-        print("Snake ID is", self._snakeID)
         self._mode = mode
+
+        self.link_mass = 1
+        self.lateral_friction = 5
+        self.anistropic_friction = [1, 1, 1]
+        self._snakeID = self.create_snake(base_position, base_orientation)
 
         # for manual sin move
         self.scaleStart = 1.0
@@ -130,7 +133,7 @@ class SnakeRobot:
         axis = []
 
         for i in range(self._length):
-            link_Masses.append(1)
+            link_Masses.append(self.link_mass)
             linkCollisionShapeIndices.append(colBoxId)
             linkVisualShapeIndices.append(visualShapeIdWhite)
             linkPositions.append([0, sphereRadius * 2.0 + 0.01, 0])
@@ -185,8 +188,9 @@ class SnakeRobot:
             linkJointAxis=axis,
         )
 
-        anistropicFriction = [1, 0.01, 0.01]
-        lateralFriction = 5
+        # anistropicFriction = [1, 0.01, 0.01]
+        anistropicFriction = self.anistropic_friction
+        lateralFriction = self.lateral_friction
         self._client.changeDynamics(uid, -1, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
 
         for i in range(self._client.getNumJoints(uid)):
@@ -229,3 +233,15 @@ class SnakeRobot:
         # wave keeps track of where the wave is in time
         self.m_waveFront += dt / m_wavePeriod * m_waveLength
         return moves
+
+    def rolling_gait(self, t) -> np.ndarray:
+        num_joints = self._length
+        v = 3
+        A = 0.3
+        xi = v*t
+        theta_odd = A*np.sin(xi)
+        theta_even = A*np.sin(xi + np.pi/2)
+        thetas = np.zeros(num_joints)
+        thetas[::2] = theta_even
+        thetas[1::2] = theta_odd
+        return thetas

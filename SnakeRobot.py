@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import pybullet as p
-
+from utils import draw_frame, to_SE3
 
 class SnakeRobot:
     def __init__(self, length, client, base_position, base_orientation, mode="position") -> None:
@@ -27,6 +27,98 @@ class SnakeRobot:
         # for manual sin move
         self.scaleStart = 1.0
         self.m_waveFront = 0.0
+
+        self.debug_items = {}
+
+        # Virtual chassis
+        self.prev_V = None
+        self.T_virtual_chassis_wrt_base = np.eye(4)
+        self.T_body_to_world = np.eye(4)
+
+    def create_snake(self, base_position, base_orientation):
+        """Creates a snake multiBody object
+
+        Returns:
+            int: ID of the snake object
+        """
+        mass = 0.06
+        sphereRadius = 0.25
+
+        colBoxId = self._client.createCollisionShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius]
+        )
+
+        visualShapeIdRed = self._client.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+            rgbaColor=[1, 0, 0, 1],
+        )
+
+        visualShapeIdWhite = self._client.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
+            rgbaColor=[0.949, 0.858, 0.670, 1],
+        )
+
+        link_Masses = []
+        linkCollisionShapeIndices = []
+        linkVisualShapeIndices = []
+        linkPositions = []
+        linkOrientations = []
+        linkInertialFramePositions = []
+        linkInertialFrameOrientations = []
+        indices = []
+        jointTypes = []
+        axis = []
+
+        for i in range(self._length):
+            link_Masses.append(self.link_mass)
+            linkCollisionShapeIndices.append(colBoxId)
+            linkVisualShapeIndices.append(visualShapeIdWhite)
+            linkPositions.append([0, sphereRadius * 2.0 + 0.01, 0])
+            linkOrientations.append([0, 0, 0, 1])
+            linkInertialFramePositions.append([0, 0, 0])
+            linkInertialFrameOrientations.append([0, 0, 0, 1])
+            indices.append(i)
+            jointTypes.append(p.JOINT_REVOLUTE)
+
+            if i % 2 == 0:
+                rotation_axis = [0, 0, 1]
+            else:
+                rotation_axis = [1, 0, 0]
+
+            axis.append(rotation_axis)
+
+        uid = self._client.createMultiBody(
+            mass,
+            colBoxId,
+            visualShapeIdRed,
+            base_position,
+            base_orientation,
+            linkMasses=link_Masses,
+            linkCollisionShapeIndices=linkCollisionShapeIndices,
+            linkVisualShapeIndices=linkVisualShapeIndices,
+            linkPositions=linkPositions,
+            linkOrientations=linkOrientations,
+            linkInertialFramePositions=linkInertialFramePositions,
+            linkInertialFrameOrientations=linkInertialFrameOrientations,
+            linkParentIndices=indices,
+            linkJointTypes=jointTypes,
+            linkJointAxis=axis,
+        )
+
+        # anistropicFriction = [1, 0.01, 0.01]
+        anistropicFriction = self.anistropic_friction
+        lateralFriction = self.lateral_friction
+        self._client.changeDynamics(uid, -1, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
+
+        for i in range(self._client.getNumJoints(uid)):
+            self._client.changeDynamics(uid, i, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
+
+        return uid
+    
+
 
     def set_motors(self, action):
         """Set joint motors
@@ -87,116 +179,64 @@ class SnakeRobot:
     def get_imu_data(self):
         pass
 
-    def get_ids(self):
-        """get snake id and client id
+    def update_virtual_chassis_frame(self, debug=True):
+        """ Updates the position of the virtual chassis with respect to the body frame (self.T_virtual_chassis_wrt_base)
+        and also updates the transformation of the body to the world (self.T_body_to_world)
 
-        Returns:
-            (int, int): Id of snake and id of client
+        Args:
+            debug (bool): Specifies if virtual chassis axes should be visualized
         """
-        return self._snakeID, self._client._client
+        # Get the transformation matrix from the body frame --> the world frame
+        body_position, body_orientation = p.getBasePositionAndOrientation(self._snakeID)
+        self.T_body_to_world = to_SE3(body_position, body_orientation)
 
-    def create_snake(self, base_position, base_orientation):
-        """Creates a snake multiBody object
+        # STEP 1: calculate geometric center of mass (IN THE INITIAL FRAME)
+        link_positions = np.zeros((1, 3))
 
-        Returns:
-            int: ID of the snake object
-        """
-        mass = 0.06
-        sphereRadius = 0.25
+        num_links = self._client.getNumJoints(self._snakeID)
+        for link_idx in range(num_links):
+            # Get the link state (position and orientation) relative to the base link
+            link_state = p.getLinkState(self._snakeID, link_idx, computeLinkVelocity=False, computeForwardKinematics=True)
+            link_position_rel_world = np.array([[link_state[0][0], link_state[0][1], link_state[0][2],  1]]).T
 
-        colBoxId = self._client.createCollisionShape(
-            p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius]
-        )
+            link_position_rel_base = np.linalg.inv(self.T_body_to_world) @ link_position_rel_world
 
-        visualShapeIdRed = self._client.createVisualShape(
-            p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-            rgbaColor=[1, 0, 0, 1],
-        )
+            link_positions = np.vstack((link_positions, link_position_rel_base.T[:, 0:3]))
 
-        visualShapeIdWhite = self._client.createVisualShape(
-            p.GEOM_BOX,
-            halfExtents=[sphereRadius, sphereRadius, sphereRadius],
-            rgbaColor=[0.949, 0.858, 0.670, 1],
-        )
+        center_of_mass_wrt_base = np.mean(link_positions, axis=0).reshape(1, 3)
 
-        link_Masses = []
-        linkCollisionShapeIndices = []
-        linkVisualShapeIndices = []
-        linkPositions = []
-        linkOrientations = []
-        linkInertialFramePositions = []
-        linkInertialFrameOrientations = []
-        indices = []
-        jointTypes = []
-        axis = []
+        P = link_positions - center_of_mass_wrt_base
 
-        for i in range(self._length):
-            link_Masses.append(self.link_mass)
-            linkCollisionShapeIndices.append(colBoxId)
-            linkVisualShapeIndices.append(visualShapeIdWhite)
-            linkPositions.append([0, sphereRadius * 2.0 + 0.01, 0])
-            linkOrientations.append([0, 0, 0, 1])
-            linkInertialFramePositions.append([0, 0, 0])
-            linkInertialFrameOrientations.append([0, 0, 0, 1])
-            indices.append(i)
-            jointTypes.append(p.JOINT_REVOLUTE)
 
-            if i % 2 == 0:
-                rotation_axis = [0, 0, 1]
-            else:
-                rotation_axis = [1, 0, 0]
+        # STEP 2: find the principle axes of rotation
+        U, S, VT = np.linalg.svd(P, full_matrices=False)
+        V = VT.T
 
-            axis.append(rotation_axis)
+        if self.prev_V is not None:
+            dot_product = np.dot(self.prev_V[:, 0], V[:, 0])
+            if dot_product < 0:
+                V[:, 0] *= -1
+                
+            # Ensure positive dot product between the second singular vectors
+            dot_product = np.dot(self.prev_V[:, 1], V[:, 1])
+            if dot_product < 0:
+                V[:, 1] *= -1
 
-        # Draw Debug rotation axes
-        # for i in range(1, self._length):
-        #     joint_position = (np.array(linkPositions[i-1]) + np.array(linkPositions[i])) / 2
-        #     joint_axis = axis[i]
+        # Modify V so it is right handed
+        cross_product = np.cross(V[:, 0], V[:, 1])
+        V[:, 2] = cross_product
+        
+        # Update virtual chassis transformation
+        self.T_virtual_chassis_wrt_base = np.eye(4)
+        self.T_virtual_chassis_wrt_base[:3, :3] = V
+        self.T_virtual_chassis_wrt_base[:3, 3] = center_of_mass_wrt_base
 
-        #     axis_length = 0.5
-        #     end_point = [
-        #         joint_position[0] + axis_length * joint_axis[0],
-        #         joint_position[1] + axis_length * joint_axis[1],
-        #         joint_position[2] + axis_length * joint_axis[2],
-        #     ]
+        self.prev_V = V
 
-        #     # Draw the debug line
-        #     self._client.addUserDebugLine(
-        #         lineFromXYZ=joint_position,
-        #         lineToXYZ=end_point,
-        #         lineColorRGB=joint_axis,
-        #         lineWidth=3,
-        #     )
-
-        uid = self._client.createMultiBody(
-            mass,
-            colBoxId,
-            visualShapeIdRed,
-            base_position,
-            base_orientation,
-            linkMasses=link_Masses,
-            linkCollisionShapeIndices=linkCollisionShapeIndices,
-            linkVisualShapeIndices=linkVisualShapeIndices,
-            linkPositions=linkPositions,
-            linkOrientations=linkOrientations,
-            linkInertialFramePositions=linkInertialFramePositions,
-            linkInertialFrameOrientations=linkInertialFrameOrientations,
-            linkParentIndices=indices,
-            linkJointTypes=jointTypes,
-            linkJointAxis=axis,
-        )
-
-        # anistropicFriction = [1, 0.01, 0.01]
-        anistropicFriction = self.anistropic_friction
-        lateralFriction = self.lateral_friction
-        self._client.changeDynamics(uid, -1, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
-
-        for i in range(self._client.getNumJoints(uid)):
-            self._client.changeDynamics(uid, i, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
-
-        return uid
+        if debug:
+            T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_virtual_chassis_wrt_base
+            draw_frame(self._client, self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
+    
 
     def generate_sin_move(self):
         """Manual movement function mimicking a sin wave function

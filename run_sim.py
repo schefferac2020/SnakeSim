@@ -7,6 +7,8 @@ import pybullet_utils.bullet_client as bc
 from SnakeRobot import SnakeRobot
 from Terrain import Terrain
 
+import time
+
 # Setup pybullet client
 client = bc.BulletClient(connection_mode=p.GUI)
 client.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
@@ -50,7 +52,6 @@ for i in range(10000000):
     snake.set_motors(thetas)
 
     # snake.set_motors(desired_joint_ang)
-    import time
     time.sleep(dt)
     t_sim += dt
     

@@ -177,7 +177,23 @@ class SnakeRobot:
         return obs.astype(np.float32)
 
     def get_imu_data(self):
-        pass
+        """Reads in the IMU data for each link. The accelerometer does not have gravity in it. 
+            No need to subtract out gravity as, when snake is still, accelerometers read zero.
+
+        Returns:
+            list: Nx6 numpy array where each row is [[lin_acc], [ang_vel]] 
+        """
+        num_links = self._client.getNumJoints(self._snakeID)
+
+        imu_data = np.empty((0, 6))
+        # Iterate over each link
+        for link_idx in range(num_links):
+            lin_acc, ang_vel = p.getLinkState(self._snakeID, link_idx, computeLinkVelocity=True)[6:8]
+
+            curr_imu_data = np.hstack((lin_acc, ang_vel))
+            imu_data = np.vstack((imu_data, curr_imu_data))
+        
+        return imu_data
 
     def update_virtual_chassis_frame(self, debug=True):
         """ Updates the position of the virtual chassis with respect to the body frame (self.T_virtual_chassis_wrt_base)

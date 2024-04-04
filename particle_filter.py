@@ -7,7 +7,7 @@ import Terrain
 
 class TerrainParticleFilter:
     class Particle:
-        joints_in_world: list[SE3]
+        pose: SE3
 
     def __init__(self, num_particles: int, terrain: Terrain):
         self.num_particles = num_particles
@@ -15,15 +15,10 @@ class TerrainParticleFilter:
         self.particles = [self.Particle() for _ in range(num_particles)]
 
     def likelihood(self, particle: Particle, joint_contact_normals_in_world: NDArray):
-        score = 0
-        for joint_in_world, joint_contact_normal_in_world in zip(particle.joints_in_world, joint_contact_normals_in_world):
-            terrain_normal_in_world = ...
-            score += np.dot(joint_contact_normal_in_world, terrain_normal_in_world)
-        return score
+        pass
 
-    def prediction(self, joint_orientations_in_world: list[SO3], joint_angular_velocities: NDArray):
-        for particle in self.particles:
-            pass
+    def prediction(self, particle_orientations: list[SO3], commanded_velocity: NDArray):
+        pass
 
     def correction(self, joint_contact_normals_in_world: NDArray):
         pass

@@ -4,10 +4,11 @@ from numpy.typing import NDArray
 
 
 class EKF:
+    # From (3)
     class State:
         a: NDArray  # World frame acceleration
-        q: SO3  # World frame orientation
-        w: SO3Tangent
+        r: SO3  # World frame orientation
+        w: SO3Tangent  # World frame angular velocity
         theta: NDArray
         theta_dot: NDArray
 
@@ -25,6 +26,15 @@ class EKF:
         :param u:   Commanded joint velocities
         :param dt:  Time step
         """
-        self.state.q = self.state.q + SO3Tangent.exp(self.state.w * dt)
+        # From (5/6), but in lie form
+        self.state.r = self.state.r + SO3Tangent.exp(self.state.w * dt)
+        # From (8)
         self.state.theta = self.state.theta + self.state.theta_dot * dt
+        # From (9)
         self.state.theta_dot = (1 - self.command_mix) * self.state.theta_dot + self.command_mix * u
+
+    def update(self, m: Measurement) -> None:
+        """
+        :param m:   Measurement
+        """
+        pass

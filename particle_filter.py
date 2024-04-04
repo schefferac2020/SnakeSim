@@ -17,7 +17,7 @@ class TerrainParticleFilter:
     def likelihood(self, particle: Particle, joint_contact_normals_in_world: NDArray):
         pass
 
-    def prediction(self, particle_orientations: list[SO3], commanded_twist: SE3Tangent):
+    def prediction(self, ekf_orientation: SO3, commanded_twist: SE3Tangent):
         pass
 
     def correction(self, joint_contact_normals_in_world: NDArray):

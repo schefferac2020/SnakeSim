@@ -9,8 +9,8 @@ class EKF:
         a: NDArray  # World frame acceleration
         r: SO3  # World frame orientation
         w: SO3Tangent  # World frame angular velocity
-        theta: NDArray
-        theta_dot: NDArray
+        theta: NDArray  # Joint angles
+        theta_dot: NDArray  # Joint velocities
 
     class Measurement:
         encoders: NDArray

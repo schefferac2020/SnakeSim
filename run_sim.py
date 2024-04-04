@@ -9,12 +9,14 @@ from Terrain import Terrain
 
 import time
 
+dt = 1. / 240.
+
 # Setup pybullet client
 client = bc.BulletClient(connection_mode=p.GUI)
 client.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
 client.setGravity(0, 0, -10)
 client.setRealTimeSimulation(1)
-
+client.setTimeStep(dt)
 
 # Make the terrain
 terrain = Terrain(client)

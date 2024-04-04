@@ -176,7 +176,7 @@ class SnakeRobot:
 
         return obs.astype(np.float32)
 
-    def get_imu_data(self):
+    def get_imu_data(self, add_noise=False):
         """Reads in the IMU data for each link. The accelerometer does not have gravity in it. 
             No need to subtract out gravity as, when snake is still, accelerometers read zero.
 
@@ -189,6 +189,14 @@ class SnakeRobot:
         # Iterate over each link
         for link_idx in range(num_links):
             lin_acc, ang_vel = p.getLinkState(self._snakeID, link_idx, computeLinkVelocity=True)[6:8]
+
+            if add_noise:
+                lin_acc_std_dev = 0
+                ang_vel_std_dev = 0
+                lin_acc_noise = np.random.normal(0, lin_acc_std_dev, size=3)
+                ang_vel_noise = np.random.normal(0, ang_vel_std_dev, size=3)
+                lin_acc = lin_acc + lin_acc_noise
+                ang_vel = ang_vel + ang_vel_noise
 
             curr_imu_data = np.hstack((lin_acc, ang_vel))
             imu_data = np.vstack((imu_data, curr_imu_data))

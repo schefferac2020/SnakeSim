@@ -27,7 +27,7 @@ class EKF:
         :param dt:  Time step
         """
         # From (5/6), but in lie form
-        self.state.r = self.state.r + SO3Tangent.exp(self.state.w * dt)
+        self.state.r = self.state.r + self.state.w * dt
         # From (8)
         self.state.theta = self.state.theta + self.state.theta_dot * dt
         # From (9)

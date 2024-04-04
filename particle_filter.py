@@ -1,5 +1,5 @@
 import numpy as np
-from manifpy import SE3d, SO3d
+from manifpy import SE3, SO3
 from numpy.typing import NDArray
 
 import Terrain
@@ -7,7 +7,7 @@ import Terrain
 
 class TerrainParticleFilter:
     class Particle:
-        joints_in_world: list[SE3d]
+        joints_in_world: list[SE3]
 
     def __init__(self, num_particles: int, terrain: Terrain):
         self.num_particles = num_particles
@@ -21,7 +21,7 @@ class TerrainParticleFilter:
             score += np.dot(joint_contact_normal_in_world, terrain_normal_in_world)
         return score
 
-    def prediction(self, joint_orientations_in_world: list[SO3d], joint_angular_velocities: NDArray):
+    def prediction(self, joint_orientations_in_world: list[SO3], joint_angular_velocities: NDArray):
         for particle in self.particles:
             pass
 

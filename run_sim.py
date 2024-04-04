@@ -29,29 +29,23 @@ snake = SnakeRobot(N, client, [0, 0, 5], [0, 0, 0, 1])
 # startOrientation = client.getQuaternionFromEuler([0,0,0])
 #set the center of mass frame (loadURDF sets base link frame) startPos/OrnclientresetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
-
-
-desired_joint_ang = 0.2 * np.ones(N)
-
 # Simulate
-# TODO: use proper pybullet timing
 dt = 1. / 240.
 t_sim = 0
 for i in range(10000000):
     client.stepSimulation()
     snake.update_virtual_chassis_frame()
     
-
+    # TODO: make this a snake function
     contacts = p.getContactPoints()
     if contacts:
         for contact in contacts:
             _, _, aId, bId, _, contactPosOnA, contactPosOnB, contactNormalOnB, *_ = contact
 
+    angles = snake.rolling_gait(t_sim)
+    # angles = snake.linear_progression_gait(t_sim)
+    snake.set_motors(angles)
 
-    thetas = snake.rolling_gait(t_sim)
-    snake.set_motors(thetas)
-
-    # snake.set_motors(desired_joint_ang)
     time.sleep(dt)
     t_sim += dt
     

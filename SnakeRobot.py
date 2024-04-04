@@ -253,43 +253,6 @@ class SnakeRobot:
             T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_virtual_chassis_wrt_base
             draw_frame(self._client, self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
     
-
-    def generate_sin_move(self):
-        """Manual movement function mimicking a sin wave function
-
-        Returns:
-            list: Joint positions
-        """
-        dt = 1. / 240.  # simulator step size
-        m_waveLength = 4
-        m_wavePeriod = 1.5
-        m_waveAmplitude = 0.4
-
-        m_segmentLength = 0.25 * 2.0
-
-        # start of the snake with smaller waves.
-        if (self.m_waveFront < m_segmentLength * 4.0):
-            self.scaleStart = self.m_waveFront / (m_segmentLength * 4.0)
-
-        moves = []
-        for joint in range(self._client.getNumJoints(self._snakeID)):
-            segment = joint  # numMuscles-1-joint
-
-            # map segment to phase
-            phase = (self.m_waveFront - (segment + 1)
-                     * m_segmentLength) / m_waveLength
-            phase -= math.floor(phase)
-            phase *= math.pi * 2.0
-
-            # map phase to curvature
-            targetPos = math.sin(phase) * self.scaleStart * m_waveAmplitude
-
-            moves.append(targetPos)
-
-        # wave keeps track of where the wave is in time
-        self.m_waveFront += dt / m_wavePeriod * m_waveLength
-        return moves
-
     def rolling_gait(self, t) -> np.ndarray:
         num_joints = self._length
         v = 3
@@ -301,3 +264,48 @@ class SnakeRobot:
         thetas[::2] = theta_even
         thetas[1::2] = theta_odd
         return thetas
+    
+    def linear_progression_gait(self, t) -> np.ndarray:
+        n = self._length
+        v = 3
+        A = 0.3
+        thetas[::2] = theta_even
+        thetas[1::2] = theta_odd 
+        return thetas
+
+
+    # def generate_sin_move(self):
+    #     """Manual movement function mimicking a sin wave function
+
+    #     Returns:
+    #         list: Joint positions
+    #     """
+    #     dt = 1. / 240.  # simulator step size
+    #     m_waveLength = 4
+    #     m_wavePeriod = 1.5
+    #     m_waveAmplitude = 0.4
+
+    #     m_segmentLength = 0.25 * 2.0
+
+    #     # start of the snake with smaller waves.
+    #     if (self.m_waveFront < m_segmentLength * 4.0):
+    #         self.scaleStart = self.m_waveFront / (m_segmentLength * 4.0)
+
+    #     moves = []
+    #     for joint in range(self._client.getNumJoints(self._snakeID)):
+    #         segment = joint  # numMuscles-1-joint
+
+    #         # map segment to phase
+    #         phase = (self.m_waveFront - (segment + 1)
+    #                  * m_segmentLength) / m_waveLength
+    #         phase -= math.floor(phase)
+    #         phase *= math.pi * 2.0
+
+    #         # map phase to curvature
+    #         targetPos = math.sin(phase) * self.scaleStart * m_waveAmplitude
+
+    #         moves.append(targetPos)
+
+    #     # wave keeps track of where the wave is in time
+    #     self.m_waveFront += dt / m_wavePeriod * m_waveLength
+    #     return moves

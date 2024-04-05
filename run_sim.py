@@ -22,16 +22,16 @@ def run():
     client.setTimeStep(dt)
 
     # Make the terrain
-    terrain = Terrain(client)
-    # planeId = client.loadURDF("plane.urdf")
+    # terrain = Terrain(client)
+    planeId = client.loadURDF("plane.urdf")
 
     # Make the snake
     N = 16 # links other than the red head
     snake = SnakeRobot(N, client, [0, 0, 5], [0, 0, 0, 1])
     controller = SnakeController(N)
 
-    forward = 0
-    turn = 0
+    forward_cmd = 0
+    turn_cmd = 0
 
     # Simulate
     t_sim = 0
@@ -48,26 +48,20 @@ def run():
         keys = client.getKeyboardEvents()
         for k, v in keys.items():
             if k == p.B3G_UP_ARROW and (v & p.KEY_WAS_TRIGGERED):
-                forward = 1
-            # if k == p.B3G_UP_ARROW and (v & p.KEY_WAS_RELEASED):
-            #     forward = 0
+                forward_cmd += 0.5
             if k == p.B3G_DOWN_ARROW and (v & p.KEY_WAS_TRIGGERED):
-                forward = -1
-            # if k == p.B3G_DOWN_ARROW and (v & p.KEY_WAS_RELEASED):
-            #     forward = 0
+                forward_cmd -= 0.5
             if k == p.B3G_LEFT_ARROW and (v & p.KEY_WAS_TRIGGERED):
-                turn = 1
-            if k == p.B3G_LEFT_ARROW and (v & p.KEY_WAS_RELEASED):
-                turn = 0
+                turn_cmd += 0.5
             if k == p.B3G_RIGHT_ARROW and (v & p.KEY_WAS_TRIGGERED):
-                turn = -1
-            if k == p.B3G_RIGHT_ARROW and (v & p.KEY_WAS_RELEASED):
-                turn = 0
+                turn_cmd -= 0.5
             if k == p.B3G_SPACE and (v & p.KEY_WAS_TRIGGERED):
-                forward = 0
-        print(forward, turn)
+                forward_cmd = 0
+                turn_cmd = 0
+        
         # angles = controller.rolling_gait(t_sim)
-        angles = controller.inchworm_gait(t_sim, 10*forward, -0.2*turn)
+        angles = controller.inchworm_gait(t_sim, 10*forward_cmd, -0.2*turn_cmd)
+        # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
         snake.set_motors(angles)
 
         time.sleep(dt)

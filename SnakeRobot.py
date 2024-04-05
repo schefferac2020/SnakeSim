@@ -261,27 +261,6 @@ class SnakeRobot:
             T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_virtual_chassis_wrt_base
             draw_frame(self._client, self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
     
-    def rolling_gait(self, t) -> np.ndarray:
-        num_joints = self._length
-        v = 3
-        A = 0.3
-        xi = v*t
-        theta_odd = A*np.sin(xi)
-        theta_even = A*np.sin(xi + np.pi/2)
-        thetas = np.zeros(num_joints)
-        thetas[::2] = theta_even
-        thetas[1::2] = theta_odd
-        return thetas
-    
-    def linear_progression_gait(self, t) -> np.ndarray:
-        n = self._length
-        v = 3
-        A = 0.3
-        thetas[::2] = theta_even
-        thetas[1::2] = theta_odd 
-        return thetas
-
-
     # def generate_sin_move(self):
     #     """Manual movement function mimicking a sin wave function
 

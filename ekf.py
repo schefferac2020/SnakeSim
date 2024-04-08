@@ -81,7 +81,24 @@ class EKF:
         gyro = np.zeros(3 * self.N)
         for i in range(self.N):
             link_to_body = forward_kinematics(i, self.state.theta)
+            dt = ... # TODO: get time step
             theta_prev = ... # TODO: get previous joint angles
             link_to_body_prev = forward_kinematics(i, theta_prev)
-            ...
+            delta_R = link_to_body @ link_to_body_prev.T / dt
+
+            # extract angular velocity from skew components
+            w_z = delta_R[1, 0]
+            w_y = delta_R[0, 2]
+            w_x = delta_R[2, 1]
+            gyro_internal = np.array([w_x, w_y, w_z])
+
+            gyro[3*i:3*(i+1)] = gyro_internal + link_to_body.T @ self.state.w
         return gyro
+    
+    def forward_kinematics(self, i: int, theta: NDArray) -> NDArray:
+        """
+        :param i:       link index
+        :param theta:   Joint angles
+        :return:        Transformation matrix from joint i to body frame
+        """
+        return ...

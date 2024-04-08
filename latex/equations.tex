@@ -1,0 +1,42 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, float}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\allowdisplaybreaks
+
+\DeclareMathOperator{\EX}{\mathbb{E}}% expected value
+\DeclareMathOperator{\Var}{\operatorname{Var}}% variance
+\DeclareMathOperator{\Span}{\operatorname{span}}% span
+\DeclareMathOperator{\Ad}{\operatorname{Ad}}% Adjoint
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}} % partial derivatives
+
+\title{ROB 530 Project Notes}
+\author{rlybrdgs }
+
+\begin{document}
+
+\maketitle
+\section{Prediction Step}
+\begin{align*}
+    \mathbf{x}_k &= \begin{bmatrix}
+        a_k \\ q_k \\ \omega_k \\ \theta_k \\ \dot{\theta}_k
+    \end{bmatrix} \in \mathbb{R}^{10+2N} \\
+    \mathbf{x}_k &= f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k \\
+    &= \begin{bmatrix}
+        e^{-\tau \Delta t} a_{k-1} \\
+        \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) q_{k-1} \\
+        \omega_{k-1} \\
+        \theta_{k-1} + \dot{\theta}_{k-1} \Delta t \\
+        (1 - \lambda) \dot{\theta}_{k-1} + \lambda \mathbf{u}_k
+    \end{bmatrix} \\
+    F_k &= \pd{f}{\mathbf{x}_{k-1}} = \begin{bmatrix}
+        e^{-\tau \Delta t} & 0 & 0 & 0 & 0 \\
+        0 & \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) & TODO & 0 & 0 \\
+        0 & 0 & 1 & 0 & 0 \\
+        0 & 0 & 0 & 1 & \Delta t \\
+        0 & 0 & 0 & 0 & 1
+    \end{bmatrix} \\
+\end{align*}
+
+\end{document}

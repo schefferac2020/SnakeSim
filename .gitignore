@@ -1,1 +1,11 @@
 __pycache__/
+
+# latex
+*.aux
+*.log
+*.fls 
+*.fdb_latexmk
+*.synctex.gz
+
+# matlab
+*.asv

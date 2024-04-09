@@ -30,12 +30,38 @@
         \theta_{k-1} + \dot{\theta}_{k-1} \Delta t \\
         (1 - \lambda) \dot{\theta}_{k-1} + \lambda \mathbf{u}_k
     \end{bmatrix} \\
+    q_k &= \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) q_{k-1} \\
+    &= \left(I \cos\left(\frac{\|\omega_{k-1} \Delta t\|}{2}\right) - \frac{1}{2} \begin{bmatrix}
+        0 & -\omega^x \Delta t & \omega^y \Delta t & \omega^z \Delta t \\
+        -\omega^x \Delta t & 0 & -\omega^z \Delta t & -\omega^y \Delta t \\
+        -\omega^y \Delta t & \omega^z \Delta t & 0 & -\omega^x \Delta t \\
+        -\omega^z \Delta t & -\omega^y \Delta t & \omega^x \Delta t & 0
+    \end{bmatrix} \frac{\sin\left(\|\omega_{k-1} \Delta t\|\right)}{\|\omega_{k-1} \Delta t\|}\right) q_{k-1} \\
     F_k &= \pd{f}{\mathbf{x}_{k-1}} = \begin{bmatrix}
         e^{-\tau \Delta t} & 0 & 0 & 0 & 0 \\
-        0 & \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) & TODO & 0 & 0 \\
+        0 & \pd{q_k}{q_{k-1}} & \pd{q_k}{\omega_{k-1}} & 0 & 0 \\
         0 & 0 & 1 & 0 & 0 \\
         0 & 0 & 0 & 1 & \Delta t \\
         0 & 0 & 0 & 0 & 1
+    \end{bmatrix} \\
+    \pd{q_k}{q_{k-1}} &= \\
+    \pd{q_k}{\omega_{k-1}} &= \\
+\end{align*}
+
+\section{Update Step}
+\begin{align*}
+    \mathbf{z}_k &= \begin{bmatrix}
+        \phi_k \\ \alpha_k \\ \gamma_k
+    \end{bmatrix} \in \mathbb{R}^{7N} \\
+    \hat{\mathbf{z}}_k &= h(\mathbf{x}_k) \\
+    &= \begin{bmatrix}
+        \theta_k \\
+        W_k^1 R_k g + \hat{a}^1_{\text{motion}} \\
+        \vdots \\
+        W_k^N R_k g + \hat{a}^N_{\text{motion}} \\
+        \bar{\omega}^1 + (W_k^1)^\top \omega_k \\
+        \vdots \\
+        \bar{\omega}^N + (W_k^N)^\top \omega_k
     \end{bmatrix} \\
 \end{align*}
 

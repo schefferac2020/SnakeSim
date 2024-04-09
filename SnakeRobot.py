@@ -5,7 +5,7 @@ import pybullet as p
 from utils import draw_frame, to_SE3
 
 class SnakeRobot:
-    def __init__(self, length, client, base_position, base_orientation, mode="position") -> None:
+    def __init__(self, length, client, head_position, head_orientation, mode="position") -> None:
         """Initialise SnakeBot
 
         Args:
@@ -20,13 +20,10 @@ class SnakeRobot:
         self._mode = mode
 
         self.link_mass = 1
+        self.link_length = 0.5
         self.lateral_friction = 5
         self.anistropic_friction = [1, 1, 1]
-        self._snakeID = self.create_snake(base_position, base_orientation)
-
-        # for manual sin move
-        self.scaleStart = 1.0
-        self.m_waveFront = 0.0
+        self._snakeID = self.create_snake(head_position, head_orientation)
 
         self.debug_items = {}
 
@@ -35,14 +32,14 @@ class SnakeRobot:
         self.T_virtual_chassis_wrt_base = np.eye(4)
         self.T_body_to_world = np.eye(4)
 
-    def create_snake(self, base_position, base_orientation):
+    def create_snake(self, head_position, head_orientation):
         """Creates a snake multiBody object
 
         Returns:
             int: ID of the snake object
         """
         mass = 0.06
-        sphereRadius = 0.25
+        sphereRadius = self.link_length / 2
 
         colBoxId = self._client.createCollisionShape(
             p.GEOM_BOX,
@@ -76,7 +73,7 @@ class SnakeRobot:
             link_Masses.append(self.link_mass)
             linkCollisionShapeIndices.append(colBoxId)
             linkVisualShapeIndices.append(visualShapeIdWhite)
-            linkPositions.append([0, sphereRadius * 2.0 + 0.01, 0])
+            linkPositions.append([0, self.link_length, 0])
             linkOrientations.append([0, 0, 0, 1])
             linkInertialFramePositions.append([0, 0, 0])
             linkInertialFrameOrientations.append([0, 0, 0, 1])
@@ -94,8 +91,8 @@ class SnakeRobot:
             mass,
             colBoxId,
             visualShapeIdRed,
-            base_position,
-            base_orientation,
+            head_position,
+            head_orientation,
             linkMasses=link_Masses,
             linkCollisionShapeIndices=linkCollisionShapeIndices,
             linkVisualShapeIndices=linkVisualShapeIndices,
@@ -108,7 +105,6 @@ class SnakeRobot:
             linkJointAxis=axis,
         )
 
-        # anistropicFriction = [1, 0.01, 0.01]
         anistropicFriction = self.anistropic_friction
         lateralFriction = self.lateral_friction
         self._client.changeDynamics(uid, -1, lateralFriction=lateralFriction, anisotropicFriction=anistropicFriction)
@@ -261,38 +257,3 @@ class SnakeRobot:
             T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_virtual_chassis_wrt_base
             draw_frame(self._client, self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
     
-    # def generate_sin_move(self):
-    #     """Manual movement function mimicking a sin wave function
-
-    #     Returns:
-    #         list: Joint positions
-    #     """
-    #     dt = 1. / 240.  # simulator step size
-    #     m_waveLength = 4
-    #     m_wavePeriod = 1.5
-    #     m_waveAmplitude = 0.4
-
-    #     m_segmentLength = 0.25 * 2.0
-
-    #     # start of the snake with smaller waves.
-    #     if (self.m_waveFront < m_segmentLength * 4.0):
-    #         self.scaleStart = self.m_waveFront / (m_segmentLength * 4.0)
-
-    #     moves = []
-    #     for joint in range(self._client.getNumJoints(self._snakeID)):
-    #         segment = joint  # numMuscles-1-joint
-
-    #         # map segment to phase
-    #         phase = (self.m_waveFront - (segment + 1)
-    #                  * m_segmentLength) / m_waveLength
-    #         phase -= math.floor(phase)
-    #         phase *= math.pi * 2.0
-
-    #         # map phase to curvature
-    #         targetPos = math.sin(phase) * self.scaleStart * m_waveAmplitude
-
-    #         moves.append(targetPos)
-
-    #     # wave keeps track of where the wave is in time
-    #     self.m_waveFront += dt / m_wavePeriod * m_waveLength
-    #     return moves

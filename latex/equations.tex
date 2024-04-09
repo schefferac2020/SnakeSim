@@ -48,6 +48,43 @@
     \pd{q_k}{\omega_{k-1}} &= \\
 \end{align*}
 
+\section{Forward Kinematics}
+\begin{align*}
+    g_{st}(\theta) &= e^{\hat{\xi}_1 \theta_1} e^{\hat{\xi}_2 \theta_2} \cdots e^{\hat{\xi}_N \theta_N} g_{st}(0) \\
+    W^i &= e^{\hat{\xi}_1 \theta_1} e^{\hat{\xi}_2 \theta_2} \cdots e^{\hat{\xi}_{i-1} \theta_{i-1}} g_{si}(0) \\
+    \xi_i &= \begin{bmatrix}
+        -\omega_i \times q_i \\
+        \omega_i
+    \end{bmatrix} \\
+    \omega_i &= \begin{cases}
+        \begin{bmatrix}
+            1 & 0 & 0
+        \end{bmatrix}^\top & i \text{ is even} \\
+        \begin{bmatrix}
+            0 & 0 & 1
+        \end{bmatrix}^\top & i \text{ is odd}
+    \end{cases} \\
+    q_i &= \begin{bmatrix}
+        0 \\ \frac{l}{2} + \sum_{j=1}^{i-1} l \\ 0
+    \end{bmatrix} = \begin{bmatrix}
+        0 \\ l(i - \frac{1}{2}) \\ 0
+    \end{bmatrix} \\
+    \xi_i &= \begin{cases}
+        \begin{bmatrix}
+            0 & 0 & -l(i-\frac{1}{2}) & 1 & 0 & 0
+        \end{bmatrix}^\top & i \text{ is even} \\
+        \begin{bmatrix}
+            l(i-\frac{1}{2}) & 0 & 0 & 0 & 0 & 1
+        \end{bmatrix}^\top & i \text{ is odd}
+    \end{cases} \\
+    g_{si}(0) &= \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & l(i-1) \\
+        0 & 0 & 1 & 0 \\
+        0 & 0 & 0 & 1
+    \end{bmatrix}
+\end{align*}
+
 \section{Update Step}
 \begin{align*}
     \mathbf{z}_k &= \begin{bmatrix}

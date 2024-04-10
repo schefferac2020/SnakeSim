@@ -1,5 +1,7 @@
 import numpy as np
 import pybullet as p
+from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
+from numpy.typing import NDArray
 
 def to_SE3(position, orientation):
     """Covert position and orientation to SE3 matrix
@@ -25,7 +27,7 @@ def draw_frame(client, debug_items, frame_name, T_wrt_world):
             frame_name (str): Specifies the name/ID of the frame to create/update
             T_wrt_world (np.array): 4x4 transformation matrix that specified the frame wrt the world frame
         """
-        line_width = 20
+        line_width = 2
         line_length = 0.5
         # Draw axes for orientation
         position = (T_wrt_world @ np.array([[0],[0],[0],[1]])).reshape(-1)[0:3]
@@ -60,3 +62,24 @@ def remove_all_debug_items(client, debug_items):
         while len(debug_items[key]) > 0:
             client.removeUserDebugItem(debug_items[0])
             debug_items.pop(0)
+
+
+def forward_kinematics(i: int, link_length: float, theta: NDArray) -> SE3:
+    """
+    :param i:       link index
+    :param theta:   Joint angles
+    :return:        Transformation matrix from joint i to body frame
+    """
+    # TODO: change from one indexing to zero indexing, which means swapping even and odd
+    g_si0 = SE3(0, link_length * (i), 0, 0, 0, 0)
+
+    
+    g_si = g_si0
+    for j in reversed(range(i)):
+        xi_even = SE3Tangent(np.array([0, 0, -link_length * (j + 1/2), 1, 0, 0]))
+        xi_odd = SE3Tangent(np.array([link_length * (j + 1/2), 0, 0, 0, 0, 1]))
+        if j % 2 == 1:
+            g_si = (xi_even * theta[j]).exp() * g_si
+        else:
+            g_si = (xi_odd * theta[j]).exp() * g_si
+    return g_si

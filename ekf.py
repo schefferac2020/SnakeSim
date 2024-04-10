@@ -101,21 +101,3 @@ class EKF:
             gyro[3*i:3*(i+1)] = gyro_internal + link_to_body.T @ self.state.w
         return gyro
     
-    def forward_kinematics(self, i: int, theta: NDArray) -> SE3:
-        """
-        :param i:       link index
-        :param theta:   Joint angles
-        :return:        Transformation matrix from joint i to body frame
-        """
-        # TODO: change from one indexing to zero indexing, which means swapping even and odd
-        g_si0 = SE3(0, self.l * (i - 1), 0, 0, 0, 0)
-        xi_even = SE3Tangent(0, 0, -self.l * (i - 1/2), 1, 0, 0)
-        xi_odd = SE3Tangent(self.l * (i - 1/2), 0, 0, 0, 0, 1)
-        
-        g_si = g_si0
-        for j in range(i):
-            if j % 2 == 0:
-                g_si = (xi_even * theta[j]).exp() @ g_si
-            else:
-                g_si = (xi_odd * theta[j]).exp() @ g_si
-        return g_si

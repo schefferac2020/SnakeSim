@@ -38,6 +38,8 @@ def run():
     for i in range(10000000):
         client.stepSimulation()
         snake.update_virtual_chassis_frame()
+
+        snake.check_fwd_kinematics()
         
         # TODO: make this a snake function
         contacts = p.getContactPoints()
@@ -62,9 +64,11 @@ def run():
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 10*forward_cmd, -0.2*turn_cmd)
         # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
+
+        angles = [0.25]* 16
         snake.set_motors(angles)
 
-        time.sleep(dt)
+        # time.sleep(dt)
         t_sim += dt
         
     client.disconnect()

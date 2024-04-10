@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import pybullet as p
-from utils import draw_frame, to_SE3
+from utils import draw_frame, to_SE3, forward_kinematics
 
 class SnakeRobot:
     def __init__(self, length, client, head_position, head_orientation, mode="position") -> None:
@@ -149,6 +149,26 @@ class SnakeRobot:
                     targetVelocity=action[joint],
                     maxVelocity=10,
                 )
+
+    def check_fwd_kinematics(self):
+        joint_angles = self.get_joint_angles()
+        num_total_links = self._length + 1
+        for i in range(num_total_links):
+            T_link_wrt_body = forward_kinematics(i, self.link_length, joint_angles).transform()
+
+            T_FK_link_wrt_wrld = self.T_body_to_world @ T_link_wrt_body
+            
+            frame_name = f"FK_link_{i}"
+            draw_frame(self._client, self.debug_items, frame_name, T_FK_link_wrt_wrld)
+            # draw_frame(self._client, self.debug_items, "HEAD", self.T_body_to_world)
+            # Get ground truth transformation of this link from pybullet
+
+    def get_joint_angles(self):
+        joint_data = np.array(
+            self._client.getJointStates(self._snakeID, list(range(self._client.getNumJoints(self._snakeID)))),
+            dtype=object
+        )[:, 0]
+        return joint_data
 
     def get_joint_data(self):
         """Returns the current state of the snake

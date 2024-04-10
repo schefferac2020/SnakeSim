@@ -36,7 +36,6 @@ class Terrain:
 
         heightfieldData_inv = heightfieldData[::-1,:]
         heightfieldData_2 = np.concatenate((heightfieldData_inv, heightfieldData))
-        print(heightfieldData_2)
 
         col,row = heightfieldData_2.shape
         heightfieldData_2 = heightfieldData_2.reshape(-1)

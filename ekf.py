@@ -1,5 +1,5 @@
 import numpy as np
-from manifpy import SO3, SO3Tangent
+from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
 
 
@@ -17,8 +17,9 @@ class EKF:
         accelerations: NDArray
         gyroscope: NDArray
 
-    def __init__(self, num_joints: int, command_mix: float) -> None:
+    def __init__(self, num_joints: int, link_length: float, command_mix: float) -> None:
         self.N = num_joints
+        self.l = link_length
         self.state = self.State()
         self.P = np.eye(self.N) * 1e-6
         self.Q = np.eye(self.N) * 1e-6
@@ -65,7 +66,7 @@ class EKF:
         for i in range(self.N):
 
             # predicted acceleration due to gravity
-            link_to_head = forward_kinematics(i, self.state.theta)
+            link_to_head = self.forward_kinematics(i, self.state.theta)
             head_to_body = ... # virtual chassis frame transform
             world_to_link = self.state.R @ head_to_body @ link_to_head # TODO: is this right? opposite of what is in the paper
             accel_g = world_to_link @ self.g
@@ -81,12 +82,12 @@ class EKF:
     def gyroscope_prediction(self) -> NDArray:
         gyro = np.zeros(3 * self.N)
         for i in range(self.N):
-            link_to_head = forward_kinematics(i, self.state.theta)
+            link_to_head = self.forward_kinematics(i, self.state.theta)
             head_to_body = ... # virtual chassis frame transform
             link_to_body = head_to_body @ link_to_head
             dt = ... # TODO: get time step
             theta_prev = ... # TODO: get previous joint angles
-            link_to_head_prev = forward_kinematics(i, theta_prev)
+            link_to_head_prev = self.forward_kinematics(i, theta_prev)
             head_to_body_prev = ... # virtual chassis frame transform
             link_to_body_prev = head_to_body_prev @ link_to_head_prev
             delta_R = link_to_body @ link_to_body_prev.T / dt
@@ -100,10 +101,20 @@ class EKF:
             gyro[3*i:3*(i+1)] = gyro_internal + link_to_body.T @ self.state.w
         return gyro
     
-    def forward_kinematics(self, i: int, theta: NDArray) -> NDArray:
+    def forward_kinematics(self, i: int, theta: NDArray) -> SE3:
         """
         :param i:       link index
         :param theta:   Joint angles
         :return:        Transformation matrix from joint i to body frame
         """
-        return ...
+        g_si0 = SE3(0, self.l * (i - 1), 0, 0, 0, 0)
+        xi_even = SE3Tangent(0, 0, -self.l * (i - 1/2), 1, 0, 0)
+        xi_odd = SE3Tangent(self.l * (i - 1/2), 0, 0, 0, 0, 1)
+        
+        g_si = g_si0
+        for j in range(i):
+            if j % 2 == 0:
+                g_si = (xi_even * theta[j]).exp() @ g_si
+            else:
+                g_si = (xi_odd * theta[j]).exp() @ g_si
+        return g_si

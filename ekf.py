@@ -107,6 +107,7 @@ class EKF:
         :param theta:   Joint angles
         :return:        Transformation matrix from joint i to body frame
         """
+        # TODO: change from one indexing to zero indexing, which means swapping even and odd
         g_si0 = SE3(0, self.l * (i - 1), 0, 0, 0, 0)
         xi_even = SE3Tangent(0, 0, -self.l * (i - 1/2), 1, 0, 0)
         xi_odd = SE3Tangent(self.l * (i - 1/2), 0, 0, 0, 0, 1)

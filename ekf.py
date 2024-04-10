@@ -65,8 +65,9 @@ class EKF:
         for i in range(self.N):
 
             # predicted acceleration due to gravity
-            link_to_body = forward_kinematics(i, self.state.theta)
-            world_to_link = self.state.R @ link_to_body # TODO: is this right? opposite of what is in the paper
+            link_to_head = forward_kinematics(i, self.state.theta)
+            head_to_body = ... # virtual chassis frame transform
+            world_to_link = self.state.R @ head_to_body @ link_to_head # TODO: is this right? opposite of what is in the paper
             accel_g = world_to_link @ self.g
     
             # predicted acceleration due to internal motion
@@ -80,10 +81,14 @@ class EKF:
     def gyroscope_prediction(self) -> NDArray:
         gyro = np.zeros(3 * self.N)
         for i in range(self.N):
-            link_to_body = forward_kinematics(i, self.state.theta)
+            link_to_head = forward_kinematics(i, self.state.theta)
+            head_to_body = ... # virtual chassis frame transform
+            link_to_body = head_to_body @ link_to_head
             dt = ... # TODO: get time step
             theta_prev = ... # TODO: get previous joint angles
-            link_to_body_prev = forward_kinematics(i, theta_prev)
+            link_to_head_prev = forward_kinematics(i, theta_prev)
+            head_to_body_prev = ... # virtual chassis frame transform
+            link_to_body_prev = head_to_body_prev @ link_to_head_prev
             delta_R = link_to_body @ link_to_body_prev.T / dt
 
             # extract angular velocity from skew components

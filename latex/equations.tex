@@ -51,7 +51,7 @@
 \section{Forward Kinematics}
 \begin{align*}
     g_{st}(\theta) &= e^{\hat{\xi}_1 \theta_1} e^{\hat{\xi}_2 \theta_2} \cdots e^{\hat{\xi}_N \theta_N} g_{st}(0) \\
-    W^i &= e^{\hat{\xi}_1 \theta_1} e^{\hat{\xi}_2 \theta_2} \cdots e^{\hat{\xi}_{i-1} \theta_{i-1}} g_{si}(0) \\
+    g_{si}(\theta) &= e^{\hat{\xi}_1 \theta_1} e^{\hat{\xi}_2 \theta_2} \cdots e^{\hat{\xi}_{i-1} \theta_{i-1}} g_{si}(0) \\
     \xi_i &= \begin{bmatrix}
         -\omega_i \times q_i \\
         \omega_i
@@ -100,6 +100,7 @@
         \vdots \\
         \bar{\omega}^N + (W_k^N)^\top \omega_k
     \end{bmatrix} \\
+    W_k^i &= C_k g_{si}(\theta_k)
 \end{align*}
 
 \end{document}

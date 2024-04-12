@@ -114,8 +114,6 @@ class SnakeRobot:
 
         return uid
     
-
-
     def set_motors(self, action):
         """Set joint motors
 

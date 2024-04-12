@@ -99,16 +99,27 @@
 \end{align*}
 
 \section{Update Step}
+Variable Conventions:
+\begin{itemize}
+    \item $q_k$ or $R_k$ is Rotation from VC frame to world frame at time $k$
+    \item $a_k$ is acceleration of VC frame in world frame, expressed in the world frame at time $k$
+    \item $\omega_k$ is angular velocity of VC frame in world frame, expressed in the VC frame at time $k$
+    \item $g_{si}(\theta)$ is transform from link $i$ to snake head frame, given joint angles $\theta$
+    \item $C_k$ is rotation from VC frame to snake head frame at time $k$
+    \item $W_k^i$ is rotation from link $i$ to VC frame at time $k$
+\end{itemize} 
 \begin{align*}
     \mathbf{z}_k &= \begin{bmatrix}
         \alpha_k \\ \gamma_k
     \end{bmatrix} \in \mathbb{R}^{6N} \\
+    \hat{\alpha}_k^i &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
+    &= (R_k^i)^\top C_k R_k^\top (g + a_k) + C_k^\top \ddot{p}_k^i \\
     \hat{\mathbf{z}}_k &= h(\mathbf{x}_k) \\
     &= \begin{bmatrix}
         % \theta_k \\
-        W_k^1 R_k (g + a_k) + \hat{a}^1_{\text{internal}} \\
+        (W_k^1)^\top R_k^\top (g + a_k) + \hat{a}^1_{\text{internal}} \\
         \vdots \\
-        W_k^N R_k (g + a_k) + \hat{a}^N_{\text{internal}} \\
+        (W_k^N)^\top R_k^\top (g + a_k) + \hat{a}^N_{\text{internal}} \\
         (W_k^1)^\top \omega_k + \hat{\omega}^1_{\text{internal}} \\
         \vdots \\
         (W_k^N)^\top \omega_k + \hat{\omega}^N_{\text{internal}} \\
@@ -117,9 +128,9 @@
         R_k^i & p_k^i \\
         0 & 1
     \end{bmatrix} \\
-    W_k^i &= C_k R_k^i(\theta_k) \\
+    W_k^i &= C_k^\top R_k^i(\theta_k) \\
     \hat{\omega}^i_{\text{internal}} &= \left(\dot{W}^i_k(W_k^i)^\top\right)^\vee \approx \frac{\text{Log}\left(W_k^i(W_{k-1}^i)^\top\right)}{\Delta t} \approx \left(\frac{W_k^i(W_{k-1}^i)^\top}{\Delta t} - I\right)^\vee \\
-    \hat{a}^i_{\text{internal}} &= \ddot{p}_k^i \\
+    \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \\
     H_k &= \pd{h}{\mathbf{x}_k} = \begin{bmatrix}
         \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & \pd{\hat{\alpha}^1_k}{\omega_k} \\
         \vdots & \vdots & \vdots \\

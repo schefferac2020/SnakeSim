@@ -65,15 +65,15 @@
 \section{Prediction Step}
 \begin{align*}
     \mathbf{x}_k &= \begin{bmatrix}
-        a_k \\ q_k \\ \omega_k \\ \theta_k \\ \dot{\theta}_k
-    \end{bmatrix} \in \mathbb{R}^{10+2N} \\
+        a_k \\ q_k \\ \omega_k %\\ \theta_k \\ \dot{\theta}_k
+    \end{bmatrix} \in \mathbb{R}^{10} \\
     \mathbf{x}_k &= f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k \\
     &= \begin{bmatrix}
         e^{-\tau \Delta t} a_{k-1} \\
         \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) q_{k-1} \\
         \omega_{k-1} \\
-        \theta_{k-1} + \dot{\theta}_{k-1} \Delta t \\
-        (1 - \lambda) \dot{\theta}_{k-1} + \lambda \mathbf{u}_k
+        % \theta_{k-1} + \dot{\theta}_{k-1} \Delta t \\
+        % (1 - \lambda) \dot{\theta}_{k-1} + \lambda \mathbf{u}_k
     \end{bmatrix} \\
     q_k &= \exp\left(-\frac{1}{2} \Psi(\omega_{k-1}) \Delta t\right) q_{k-1} \\
     &= \left(I \cos\left(\frac{\|\omega_{k-1} \Delta t\|}{2}\right) - \frac{1}{2} \begin{bmatrix}
@@ -82,12 +82,17 @@
         -\omega^y \Delta t & \omega^z \Delta t & 0 & -\omega^x \Delta t \\
         -\omega^z \Delta t & -\omega^y \Delta t & \omega^x \Delta t & 0
     \end{bmatrix} \frac{\sin\left(\|\omega_{k-1} \Delta t\|\right)}{\|\omega_{k-1} \Delta t\|}\right) q_{k-1} \\
+    % F_k &= \pd{f}{\mathbf{x}_{k-1}} = \begin{bmatrix}
+    %     e^{-\tau \Delta t} & 0 & 0 & 0 & 0 \\
+    %     0 & \pd{q_k}{q_{k-1}} & \pd{q_k}{\omega_{k-1}} & 0 & 0 \\
+    %     0 & 0 & 1 & 0 & 0 \\
+    %     0 & 0 & 0 & 1 & \Delta t \\
+    %     0 & 0 & 0 & 0 & 1
+    % \end{bmatrix} \\
     F_k &= \pd{f}{\mathbf{x}_{k-1}} = \begin{bmatrix}
-        e^{-\tau \Delta t} & 0 & 0 & 0 & 0 \\
-        0 & \pd{q_k}{q_{k-1}} & \pd{q_k}{\omega_{k-1}} & 0 & 0 \\
-        0 & 0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 1 & \Delta t \\
-        0 & 0 & 0 & 0 & 1
+        Ie^{-\tau \Delta t} & 0 & 0 \\
+        0 & \pd{q_k}{q_{k-1}} & \pd{q_k}{\omega_{k-1}} \\
+        0 & 0 & I \\
     \end{bmatrix} \\
     \pd{q_k}{q_{k-1}} &= TODO \\
     \pd{q_k}{\omega_{k-1}} &= TODO \\
@@ -96,22 +101,40 @@
 \section{Update Step}
 \begin{align*}
     \mathbf{z}_k &= \begin{bmatrix}
-        \phi_k \\ \alpha_k \\ \gamma_k
-    \end{bmatrix} \in \mathbb{R}^{7N} \\
+        \alpha_k \\ \gamma_k
+    \end{bmatrix} \in \mathbb{R}^{6N} \\
     \hat{\mathbf{z}}_k &= h(\mathbf{x}_k) \\
     &= \begin{bmatrix}
-        \theta_k \\
-        W_k^1 R_k g + \hat{a}^1_{\text{motion}} \\
+        % \theta_k \\
+        W_k^1 R_k (g + a_k) + \hat{a}^1_{\text{internal}} \\
         \vdots \\
-        W_k^N R_k g + \hat{a}^N_{\text{motion}} \\
-        \bar{\omega}^1 + (W_k^1)^\top \omega_k \\
+        W_k^N R_k (g + a_k) + \hat{a}^N_{\text{internal}} \\
+        (W_k^1)^\top \omega_k + \hat{\omega}^1_{\text{internal}} \\
         \vdots \\
-        \bar{\omega}^N + (W_k^N)^\top \omega_k
+        (W_k^N)^\top \omega_k + \hat{\omega}^N_{\text{internal}} \\
     \end{bmatrix} \\
-    W_k^i &= C_k g_{si}(\theta_k) \\
-    \bar{\omega}^i &= \left(\frac{W_k^i(W_{k-1}^i)^{-1}}{\Delta t} - I\right)^\vee \\
-    \hat{a}^i_{\text{motion}} &= TODO \\
-    H_k &= \pd{h}{\mathbf{x}_k} = TODO \\
+    g_{si}(\theta_k) &= \begin{bmatrix}
+        R_k^i & p_k^i \\
+        0 & 1
+    \end{bmatrix} \\
+    W_k^i &= C_k R_k^i(\theta_k) \\
+    \hat{\omega}^i_{\text{internal}} &= \left(\dot{W}^i_k(W_k^i)^\top\right)^\vee \approx \frac{\text{Log}\left(W_k^i(W_{k-1}^i)^\top\right)}{\Delta t} \approx \left(\frac{W_k^i(W_{k-1}^i)^\top}{\Delta t} - I\right)^\vee \\
+    \hat{a}^i_{\text{internal}} &= \ddot{p}_k^i \\
+    H_k &= \pd{h}{\mathbf{x}_k} = \begin{bmatrix}
+        \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & \pd{\hat{\alpha}^1_k}{\omega_k} \\
+        \vdots & \vdots & \vdots \\
+        \pd{\hat{\alpha}^N_k}{a_k} & \pd{\hat{\alpha}^N_k}{q_k} & \pd{\hat{\alpha}^N_k}{\omega_k} \\
+        \pd{\hat{\gamma}^1_k}{a_k} & \pd{\hat{\gamma}^1_k}{q_k} & \pd{\hat{\gamma}^1_k}{\omega_k} \\
+        \vdots & \vdots & \vdots \\
+        \pd{\hat{\gamma}^N_k}{a_k} & \pd{\hat{\gamma}^N_k}{q_k} & \pd{\hat{\gamma}^N_k}{\omega_k} \\
+    \end{bmatrix} = \begin{bmatrix}
+        \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & 0 \\
+        \vdots & \vdots & \vdots \\
+        \pd{\hat{\alpha}^N_k}{a_k} & \pd{\hat{\alpha}^N_k}{q_k} & 0 \\
+        0 & 0 & \pd{\hat{\gamma}^1_k}{\omega_k} \\
+        \vdots & \vdots & \vdots \\
+        0 & 0 & \pd{\hat{\gamma}^N_k}{\omega_k} \\
+    \end{bmatrix} \\
 \end{align*}
 
 \end{document}

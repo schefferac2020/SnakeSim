@@ -70,7 +70,6 @@ def forward_kinematics(i: int, link_length: float, theta: NDArray) -> SE3:
     :param theta:   Joint angles
     :return:        Transformation matrix from joint i to body frame
     """
-    # TODO: change from one indexing to zero indexing, which means swapping even and odd
     g_si0 = SE3(0, link_length * (i), 0, 0, 0, 0)
 
     

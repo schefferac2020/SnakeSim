@@ -1,8 +1,7 @@
-import numpy as np
 from manifpy import SE3, SO3, SE3Tangent
 from numpy.typing import NDArray
 
-import terrain
+from terrain import Terrain
 
 
 class TerrainParticleFilter:

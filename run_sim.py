@@ -7,6 +7,8 @@ import pybullet_utils.bullet_client as bc
 from SnakeRobot import SnakeRobot
 from Terrain import Terrain
 from snake_controller import SnakeController
+from ekf import EKF
+from utils import draw_frame, to_SE3
 
 import time
 
@@ -27,9 +29,11 @@ def run():
 
     # Make the snake
     N = 8 # links other than the red head
-    snake = SnakeRobot(N, client, [0, 0, 5], [0, 0, 0, 1])
+    link_length = 0.5
+    snake = SnakeRobot(N, link_length, client, [0, 0, 5], [0, 0, 0, 1])
     controller = SnakeController(N)
-
+    ekf = EKF(N, link_length)
+    ekf.state.w = np.array([0, 0.5, 0])
 
 
     forward_cmd = 0
@@ -70,6 +74,11 @@ def run():
         # angles = [0, 0.5]* 8
         snake.set_motors(angles)
 
+        # Prediction step of the EKF
+        ekf.process_model(dt)
+        ekf_transform = to_SE3(np.array([0, 0, 0]), ekf.state.q)
+        draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
+        
         # time.sleep(dt)
         t_sim += dt
         

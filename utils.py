@@ -82,3 +82,12 @@ def forward_kinematics(i: int, link_length: float, theta: NDArray) -> SE3:
         else:
             g_si = (xi_odd * theta[j]).exp() * g_si
     return g_si
+
+
+
+def ang_vel_wedge(w):
+    '''Wedge operator for angualr velocity using quaternion LIE algebra'''
+    return np.array([[0,        -w[0], -w[1],    -w[2]],
+                     [w[0],     0,      w[2],   -w[1]],
+                     [w[1],     -w[2],   0,       w[0]],
+                     [w[2],     w[1],    -w[0],     0]])

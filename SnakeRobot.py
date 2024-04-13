@@ -5,7 +5,7 @@ import pybullet as p
 from utils import draw_frame, to_SE3, forward_kinematics
 
 class SnakeRobot:
-    def __init__(self, length, client, head_position, head_orientation, mode="position") -> None:
+    def __init__(self, length, link_length, client, head_position, head_orientation, mode="position") -> None:
         """Initialise SnakeBot
 
         Args:
@@ -20,7 +20,7 @@ class SnakeRobot:
         self._mode = mode
 
         self.link_mass = 1
-        self.link_length = 0.5
+        self.link_length = link_length
         self.lateral_friction = 5
         self.anistropic_friction = [1, 1, 1]
         self._snakeID = self.create_snake(head_position, head_orientation)

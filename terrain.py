@@ -36,6 +36,8 @@ class Terrain:
         self.normals = np.zeros((cols, rows, 3), dtype=float)
         for x in range(1, cols):
             for y in range(1, rows):
+                # Shoot a ray from the sky directly above this cell and collect the hit normal
+                # I figured this would be most similar to the snake giving back normal values from contact
                 x_c = x - cols / 2
                 y_c = y - rows / 2
                 hit, = client.rayTest([x_c, y_c, 100], [x_c, y_c, -100])

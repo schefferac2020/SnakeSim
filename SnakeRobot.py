@@ -38,12 +38,16 @@ class SnakeRobot:
         Returns:
             int: ID of the snake object
         """
-        mass = 0.06
         sphereRadius = self.link_length / 2
 
         colBoxId = self._client.createCollisionShape(
             p.GEOM_BOX,
             halfExtents=[sphereRadius, sphereRadius, sphereRadius]
+        )
+
+        jointBoxId = self._client.createCollisionShape(
+            p.GEOM_BOX,
+            halfExtents=[0.1, 0.1, 0.1]
         )
 
         visualShapeIdRed = self._client.createVisualShape(
@@ -58,6 +62,12 @@ class SnakeRobot:
             rgbaColor=[0.949, 0.858, 0.670, 1],
         )
 
+        visualJointShape = self._client.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[0.1, 0.1, 0.1],
+            rgbaColor=[0, 0, 0.670, 1],
+        )
+
         link_Masses = []
         linkCollisionShapeIndices = []
         linkVisualShapeIndices = []
@@ -69,15 +79,17 @@ class SnakeRobot:
         jointTypes = []
         axis = []
 
+        ind = 0
         for i in range(self._length):
-            link_Masses.append(self.link_mass)
-            linkCollisionShapeIndices.append(colBoxId)
-            linkVisualShapeIndices.append(visualShapeIdWhite)
-            linkPositions.append([0, self.link_length, 0])
+            # 1. We first connect a revolute link to the edge of the last box (with an embedded revolute joint)
+            link_Masses.append(0.000)
+            linkCollisionShapeIndices.append(jointBoxId)
+            linkVisualShapeIndices.append(visualJointShape)
+            linkPositions.append([0, self.link_length/2, 0])
             linkOrientations.append([0, 0, 0, 1])
             linkInertialFramePositions.append([0, 0, 0])
             linkInertialFrameOrientations.append([0, 0, 0, 1])
-            indices.append(i)
+            indices.append(ind)
             jointTypes.append(p.JOINT_REVOLUTE)
 
             if i % 2 == 0:
@@ -87,8 +99,26 @@ class SnakeRobot:
 
             axis.append(rotation_axis)
 
+            ind += 1
+
+            # 1. We now connect the next yellow box link (with an embedded fixed joint).
+            link_Masses.append(self.link_mass)
+            linkCollisionShapeIndices.append(colBoxId)
+            linkVisualShapeIndices.append(visualShapeIdWhite)
+            linkPositions.append([0, self.link_length/2, 0])
+            linkOrientations.append([0, 0, 0, 1])
+            linkInertialFramePositions.append([0, 0, 0])
+            linkInertialFrameOrientations.append([0, 0, 0, 1])
+            indices.append(ind)
+            jointTypes.append(p.JOINT_FIXED)
+            axis.append(rotation_axis)
+
+            ind += 1
+
+            
+
         uid = self._client.createMultiBody(
-            mass,
+            self.link_mass,
             colBoxId,
             visualShapeIdRed,
             head_position,
@@ -122,6 +152,10 @@ class SnakeRobot:
         Args:
             action (list): Set value for each joint
         """
+
+        # Turn action of [1, 2, 3] to [1, 0, 2, 0, 3, 0]
+        action = [x for num in action for x in (num, 0)]
+
 
         for joint in range(self._client.getNumJoints(self._snakeID)):
             if self._mode == "torque":
@@ -168,6 +202,9 @@ class SnakeRobot:
             self._client.getJointStates(self._snakeID, list(range(self._client.getNumJoints(self._snakeID)))),
             dtype=object
         )[:, 0]
+
+        # Just get the non-fixed joint angles...
+        joint_data = joint_data[::2]
         return joint_data
 
     def get_joint_data(self):
@@ -199,12 +236,26 @@ class SnakeRobot:
         Returns:
             list: Nx6 numpy array where each row is [[lin_acc], [ang_vel]] 
         """
-        num_links = self._client.getNumJoints(self._snakeID)
+        num_child_links = self._length
 
         imu_data = np.empty((0, 6))
-        # Iterate over each link
-        for link_idx in range(num_links):
-            lin_acc, ang_vel = p.getLinkState(self._snakeID, link_idx, computeLinkVelocity=True)[6:8]
+
+        # Get the base link
+        lin_acc, ang_vel = p.getBaseVelocity(self._snakeID)
+        if add_noise:
+            lin_acc_std_dev = 0
+            ang_vel_std_dev = 0
+            lin_acc_noise = np.random.normal(0, lin_acc_std_dev, size=3)
+            ang_vel_noise = np.random.normal(0, ang_vel_std_dev, size=3)
+            lin_acc = lin_acc + lin_acc_noise
+            ang_vel = ang_vel + ang_vel_noise
+        curr_imu_data = np.hstack((lin_acc, ang_vel))
+        imu_data = np.vstack((imu_data, curr_imu_data))
+
+
+        # Iterate over each child link
+        for link_idx in range(num_child_links):
+            lin_acc, ang_vel = p.getLinkState(self._snakeID, 2*link_idx, computeLinkVelocity=True)[6:8]
 
             if add_noise:
                 lin_acc_std_dev = 0
@@ -226,6 +277,9 @@ class SnakeRobot:
         Args:
             debug (bool): Specifies if virtual chassis axes should be visualized
         """
+        # TODO: This virtual frame will also be wrong...
+
+
         # Get the transformation matrix from the body frame --> the world frame
         body_position, body_orientation = p.getBasePositionAndOrientation(self._snakeID)
         self.T_body_to_world = to_SE3(body_position, body_orientation)
@@ -233,10 +287,10 @@ class SnakeRobot:
         # STEP 1: calculate geometric center of mass (IN THE INITIAL FRAME)
         link_positions = np.zeros((1, 3))
 
-        num_links = self._client.getNumJoints(self._snakeID)
-        for link_idx in range(num_links):
+        num_child_links = self._length
+        for link_idx in range(num_child_links):
             # Get the link state (position and orientation) relative to the base link
-            link_state = p.getLinkState(self._snakeID, link_idx, computeLinkVelocity=False, computeForwardKinematics=True)
+            link_state = p.getLinkState(self._snakeID, 2*link_idx, computeLinkVelocity=False, computeForwardKinematics=True)
             link_position_rel_world = np.array([[link_state[0][0], link_state[0][1], link_state[0][2],  1]]).T
 
             link_position_rel_base = np.linalg.inv(self.T_body_to_world) @ link_position_rel_world

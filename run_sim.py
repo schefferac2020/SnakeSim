@@ -30,6 +30,8 @@ def run():
     snake = SnakeRobot(N, client, [0, 0, 5], [0, 0, 0, 1])
     controller = SnakeController(N)
 
+
+
     forward_cmd = 0
     turn_cmd = 0
 
@@ -65,7 +67,7 @@ def run():
         angles = controller.inchworm_gait(t_sim, 10*forward_cmd, -0.2*turn_cmd)
         # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
 
-        angles = [0.25]* 16
+        # angles = [0, 0.5]* 8
         snake.set_motors(angles)
 
         # time.sleep(dt)

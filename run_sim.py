@@ -22,8 +22,8 @@ def run():
     client.setTimeStep(dt)
 
     # Make the terrain
-    # terrain = Terrain(client)
-    planeId = client.loadURDF("plane.urdf")
+    terrain = Terrain(client)
+    # client.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8 # links other than the red head

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
@@ -5,6 +7,7 @@ from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_to
 
 class EKF:
     # from (our head)
+    @dataclass
     class State:
         a: NDArray  # World frame acceleration
         q: NDArray  # World frame orientation

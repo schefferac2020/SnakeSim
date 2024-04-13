@@ -34,7 +34,7 @@ def run():
     ekf = EKF(N, link_length)
     ekf.state.w = np.array([0, 0.5, 0])
 
-    pf = TerrainParticleFilter(100, terrain)
+    pf = TerrainParticleFilter(100, N, terrain)
 
     forward_cmd = 0
     turn_cmd = 0
@@ -46,12 +46,6 @@ def run():
         snake.update_virtual_chassis_frame()
 
         snake.check_fwd_kinematics()
-
-        # TODO: make this a snake function
-        contacts = p.getContactPoints()
-        if contacts:
-            for contact in contacts:
-                _, _, a_id, b_id, _, contact_position_on_a, contact_position_on_b, contact_normal_on_b, *_ = contact
 
         keys = client.getKeyboardEvents()
         for k, v in keys.items():
@@ -94,6 +88,11 @@ def run():
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
         pf.prediction(orientation, twist)
 
+        # TODO: make this a snake function
+        contacts = p.getContactPoints()
+        if contacts:
+            for contact in contacts:
+                _, _, a_id, b_id, _, contact_position_on_a, contact_position_on_b, contact_normal_on_b, *_ = contact
 
         # time.sleep(dt)
         t_sim += dt

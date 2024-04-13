@@ -28,7 +28,7 @@ def draw_frame(client, debug_items, frame_name, T_wrt_world):
             T_wrt_world (np.array): 4x4 transformation matrix that specified the frame wrt the world frame
         """
         line_width = 2
-        line_length = 0.5
+        line_length = 0.3
         # Draw axes for orientation
         position = (T_wrt_world @ np.array([[0],[0],[0],[1]])).reshape(-1)[0:3]
 
@@ -70,7 +70,6 @@ def forward_kinematics(i: int, link_length: float, theta: NDArray) -> SE3:
     :param theta:   Joint angles
     :return:        Transformation matrix from joint i to body frame
     """
-    # TODO: change from one indexing to zero indexing, which means swapping even and odd
     g_si0 = SE3(0, link_length * (i), 0, 0, 0, 0)
 
     

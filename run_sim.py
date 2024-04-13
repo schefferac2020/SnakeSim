@@ -23,8 +23,8 @@ def run():
     client.setTimeStep(dt)
 
     # Make the terrain
-    terrain = Terrain(client)
-    # client.loadURDF("plane.urdf")
+    # terrain = Terrain(client)
+    client.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8  # links other than the red head
@@ -77,15 +77,23 @@ def run():
         # Prediction step of the EKF
         ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
 
-        ekf.process_model(dt)
-        
+        # ekf.predict(dt)
+
         ekf_transform = to_SE3(np.array([0, 0, 0]), ekf.state.q)
         draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
+
+        # Get Measuremnts
+        encoders = ...
+        [accelerometers, gyros] = snake.get_imu_data()
+
+        # Update Step of EKF
+        # ekf.update(encoders, accelerometers, gyros)
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
         pf.prediction(orientation, twist)
+
 
         # time.sleep(dt)
         t_sim += dt

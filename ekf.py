@@ -1,7 +1,7 @@
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
-from utils import ang_vel_wedge, forward_kinematics
+from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_too_xyzw
 
 class EKF:
     # from (our head)
@@ -15,17 +15,13 @@ class EKF:
             self.q = q
             self.w = w
 
-    class Measurement:
-        encoders: NDArray
-        accelerations: NDArray
-        gyroscope: NDArray
-
     def __init__(self, num_joints: int, link_length: float ) -> None:
         self.N = num_joints
         self.l = link_length
         self.state = self.State()
         self.P = np.eye(self.N) * 1e-6
         self.Q = np.eye(self.N) * 1e-6
+        self.thetas = np.zeros(self.N)
         
         # self.state.q = np.array([[1, 0, 0, 0]]).T #qw qx qy qz
 
@@ -142,18 +138,17 @@ class EKF:
         return jacobi
 
 
-    def predict(self, u: NDArray, dt: float) -> None:
+    def predict(self, dt: float) -> None:
         """
         :param u:   Commanded joint velocities
         :param dt:  Time step
         """
 
         # predict state with process model(self.state, u, dt)
-        self.state = self.process_model(u, dt)
+        self.state = self.process_model(dt)
         F = self.process_jacobian(dt)
         # T state dynamics
         self.P = F @ self.P @ F.T + self.Q
-
 
 
     def tempy(self, i: int, q_in: NDArray):
@@ -173,14 +168,15 @@ class EKF:
         return np.array(result.subs(zippy))
 
 
-    def update(self, m: Measurement) -> None:
+    def update(self, encoders, accelerations, gyros) -> None:
         """
-        :param m:   Measurement
         """
+        self.thetas = encoders
+
         predicted_accelerations = self.acceleration_prediction()
         predicted_gyroscope = self.gyroscope_prediction()
         
-        m_vec = np.concatenate([m.accelerations, m.gyroscope])
+        m_vec = np.concatenate([accelerations, gyros])
         pred_vec = np.concatenate([predicted_accelerations, predicted_gyroscope]) 
         H = ... # TODO: AYYYYYYYYYYYYYYYYYYYYYYYYYYY DO THIS
 
@@ -195,45 +191,37 @@ class EKF:
         for i in range(self.N):
 
             # predicted acceleration due to gravity
-            link_to_head = self.forward_kinematics(i, self.state.theta).rotation()
+            link_to_head = self.forward_kinematics(i).rotation()
             body_to_head = self.VC_to_Head # virtual chassis frame transform
             link_to_body = body_to_head.T @ link_to_head
 
-            normalized = self.state.q / np.linalg.norm(self.state.q)
-            body_to_world = SO3(self.state.q).transform()
-    
+            body_to_world = SO3(wxyz_too_xyzw(self.state.q)).transform()
+
             # predicted acceleration due to internal motion
-            accel_internal = ... # TODO
-            
+            accel_internal = ... # TODO pk double dot
+
+            accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + body_to_head.T @ accel_internal 
+
             # predicted acceleration from robot motion
-            accel_robot = world_to_link @ self.state.a
-            accel[3*i:3*(i+1)] = accel_g + accel_internal + accel_robot
+            accel[3*i:3*(i+1)] = accel_pred
         return accel
     
     def gyroscope_prediction(self) -> NDArray:
         gyro = np.zeros(3 * self.N)
         for i in range(self.N):
-            link_to_head = self.forward_kinematics(i, self.state.theta)
-            head_to_body = ... # virtual chassis frame transform
-            link_to_body = head_to_body @ link_to_head
-            dt = ... # TODO: get time step
-            theta_prev = ... # TODO: get previous joint angles
-            link_to_head_prev = self.forward_kinematics(i, theta_prev)
-            head_to_body_prev = ... # virtual chassis frame transform
-            link_to_body_prev = head_to_body_prev @ link_to_head_prev
-            delta_R = link_to_body @ link_to_body_prev.T / dt
+            link_to_head = self.forward_kinematics(i)
+            body_to_head = self.VC_to_Head
+            link_to_body = body_to_head.T @ link_to_head
+            
+            gyro_internal = ... # TODO pk double dot
+            
+            gyro_pred = link_to_body.T @ self.state.w + gyro_internal
 
-            # extract angular velocity from skew components
-            w_z = delta_R[1, 0]
-            w_y = delta_R[0, 2]
-            w_x = delta_R[2, 1]
-            gyro_internal = np.array([w_x, w_y, w_z])
-
-            gyro[3*i:3*(i+1)] = gyro_internal + link_to_body.T @ self.state.w
+            gyro[3*i:3*(i+1)] = gyro_pred
         return gyro
     
-    def forward_kinematics(self, i, thetas):
-        return forward_kinematics(i, self.l, thetas)
+    def forward_kinematics(self, i):
+        return forward_kinematics(i, self.l, self.thetas)
     
 
 if __name__ == '__main__':

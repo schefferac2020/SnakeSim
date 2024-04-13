@@ -101,19 +101,32 @@
 \section{Update Step}
 Variable Conventions:
 \begin{itemize}
-    \item $q_k$ or $R_k$ is Rotation from VC frame to world frame at time $k$
+    \item $q_k$ or $R_k$ is rotation from VC frame to world frame at time $k$
     \item $a_k$ is acceleration of VC frame in world frame, expressed in the world frame at time $k$
     \item $\omega_k$ is angular velocity of VC frame in world frame, expressed in the VC frame at time $k$
     \item $g_{si}(\theta)$ is transform from link $i$ to snake head frame, given joint angles $\theta$
     \item $C_k$ is rotation from VC frame to snake head frame at time $k$
     \item $W_k^i$ is rotation from link $i$ to VC frame at time $k$
+    \item $\alpha_k$ is the measured acceleration of link $i$ in the world frame, expressed in the link frame at time $k$
+    \item $\gamma_k$ is the measured angular velocity of link $i$ in the world frame, expressed in the link frame at time $k$
 \end{itemize} 
 \begin{align*}
+    g_{si}(\theta_k) &= \begin{bmatrix}
+        R_k^i & p_k^i \\
+        0 & 1
+    \end{bmatrix} \\
+    W_k^i &= C_k^\top R_k^i \\
     \mathbf{z}_k &= \begin{bmatrix}
         \alpha_k \\ \gamma_k
     \end{bmatrix} \in \mathbb{R}^{6N} \\
-    \hat{\alpha}_k^i &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
-    &= (R_k^i)^\top C_k R_k^\top (g + a_k) + C_k^\top \ddot{p}_k^i \\
+    \hat{\alpha}_k^i &= (W_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
+    % &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
+    &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + C_k^\top \ddot{p}_k^i \\
+    \hat{\gamma}_k^i &= (W_k^i)^\top \omega_k + \hat{\omega}^i_{\text{internal}} \\
+    \hat{\omega}^i_{\text{internal}} &= C_k^\top\left(\dot{R}_k^i(R_k^i)^\top\right)^\vee \\
+    &= \left(\dot{W}^i_k(W_k^i)^\top\right)^\vee \approx \frac{\text{Log}\left(W_k^i(W_{k-1}^i)^\top\right)}{\Delta t} \approx \left(\frac{W_k^i(W_{k-1}^i)^\top}{\Delta t} - I\right)^\vee
+\end{align*}
+\begin{align*}
     \hat{\mathbf{z}}_k &= h(\mathbf{x}_k) \\
     &= \begin{bmatrix}
         % \theta_k \\
@@ -124,13 +137,7 @@ Variable Conventions:
         \vdots \\
         (W_k^N)^\top \omega_k + \hat{\omega}^N_{\text{internal}} \\
     \end{bmatrix} \\
-    g_{si}(\theta_k) &= \begin{bmatrix}
-        R_k^i & p_k^i \\
-        0 & 1
-    \end{bmatrix} \\
-    W_k^i &= C_k^\top R_k^i(\theta_k) \\
-    \hat{\omega}^i_{\text{internal}} &= \left(\dot{W}^i_k(W_k^i)^\top\right)^\vee \approx \frac{\text{Log}\left(W_k^i(W_{k-1}^i)^\top\right)}{\Delta t} \approx \left(\frac{W_k^i(W_{k-1}^i)^\top}{\Delta t} - I\right)^\vee \\
-    \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \\
+    % \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \\
     H_k &= \pd{h}{\mathbf{x}_k} = \begin{bmatrix}
         \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & \pd{\hat{\alpha}^1_k}{\omega_k} \\
         \vdots & \vdots & \vdots \\
@@ -146,6 +153,18 @@ Variable Conventions:
         \vdots & \vdots & \vdots \\
         0 & 0 & \pd{\hat{\gamma}^N_k}{\omega_k} \\
     \end{bmatrix} \\
+    \pd{\hat{\alpha}^i_k}{a_k} &= \pd{}{a_k} \left((W_k^i)^\top R_k^\top (g + a_k)\right) + \pd{}{a_k} \hat{a}^i_{\text{internal}} \\
+    &= \pd{}{a_k} \left((W_k^i)^\top R_k^\top g\right) + \pd{}{a_k} \left((W_k^i)^\top R_k^\top a_k\right) + 0 \\ 
+    &= 0 + \pd{}{a_k} \left((W_k^i)^\top R_k^\top a_k\right) \\
+    &= (W_k^i)^\top R_k^\top \\
+    \pd{\hat{\alpha}^i_k}{q} &= \begin{bmatrix}
+        \pd{\hat{\alpha}^i_k}{q_x} & \pd{\hat{\alpha}^i_k}{q_y} & \pd{\hat{\alpha}^i_k}{q_z} & \pd{\hat{\alpha}^i_k}{q_w}
+    \end{bmatrix} \\
+    \pd{\hat{\alpha}^i_k}{q_j} &= \pd{}{q_j} \left((W_k^i)^\top R_k^\top (g + a_k)\right) + \pd{}{q_j} \hat{a}^i_{\text{internal}} \\
+    &= (W_k^i)^\top \pd{}{q_j} \left( R_k^\top (g + a_k)\right) + 0 \\
+    &= (W_k^i)^\top \pd{R_k^\top}{q_j} (g + a_k) = (W_k^i)^\top \left(\pd{R_k}{q_j}\right)^\top (g + a_k) \\
+    \pd{\hat{\gamma}^i_k}{\omega_k} &= \pd{}{\omega_k} \left((W_k^i)^\top \omega_k\right) + \pd{}{\omega_k} \hat{\omega}^i_{\text{internal}} \\
+    &= (W_k^i)^\top \\
 \end{align*}
 
 \end{document}

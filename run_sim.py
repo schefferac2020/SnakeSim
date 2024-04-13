@@ -5,7 +5,7 @@ import pybullet_data
 import pybullet_utils.bullet_client as bc
 
 from SnakeRobot import SnakeRobot
-from Terrain import Terrain
+from terrain import Terrain
 from snake_controller import SnakeController
 from ekf import EKF
 from utils import draw_frame, to_SE3
@@ -46,12 +46,12 @@ def run():
         snake.update_virtual_chassis_frame()
 
         snake.check_fwd_kinematics()
-        
+
         # TODO: make this a snake function
         contacts = p.getContactPoints()
         if contacts:
             for contact in contacts:
-                _, _, aId, bId, _, contactPosOnA, contactPosOnB, contactNormalOnB, *_ = contact
+                _, _, a_id, b_id, _, contact_position_on_a, contact_position_on_b, contact_normal_on_b, *_ = contact
 
         keys = client.getKeyboardEvents()
         for k, v in keys.items():
@@ -66,7 +66,7 @@ def run():
             if k == p.B3G_SPACE and (v & p.KEY_WAS_TRIGGERED):
                 forward_cmd = 0
                 turn_cmd = 0
-        
+
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 10*forward_cmd, -0.2*turn_cmd)
         # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
@@ -81,7 +81,7 @@ def run():
         
         # time.sleep(dt)
         t_sim += dt
-        
+
     client.disconnect()
 
 

@@ -3,7 +3,6 @@ from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
 from utils import ang_vel_wedge, forward_kinematics
 
-
 class EKF:
     # from (our head)
     class State:
@@ -34,6 +33,10 @@ class EKF:
 
         self.g = np.array([0, 0, -9.81])
 
+        self.VC_to_Body = np.eye(4)
+    
+    def set_VC_Transform(self, VC_to_Head_in):
+        self.VC_to_Head = VC_to_Head_in
 
     def process_model(self, dt: float):
         '''Update the the state to be state_pred.
@@ -151,6 +154,25 @@ class EKF:
         # T state dynamics
         self.P = F @ self.P @ F.T + self.Q
 
+
+
+    def tempy(self, i: int, q_in: NDArray):
+        from sympy.abc import w, x, y, z
+        from sympy import Matrix
+
+        q = [w, x, y, z]
+
+        R_q = Matrix([[w**2 + x**2 - y**2 - z**2,    2*(x * y - w * z),         2 * (x * z + w * y)],
+                     [2 * (x * y + w * z),      w**2 - x**2 + y**2 - z**2,     2 * (y * z - w * x)],
+                     [2 * (x * z - w * z),      2 * (y * z + w * x),       w**2 - x**2 - y**2 + z**2]])
+        
+        zippy = list(zip(q, q_in))
+
+        result = R_q.diff(q[i])
+
+        return np.array(result.subs(zippy))
+
+
     def update(self, m: Measurement) -> None:
         """
         :param m:   Measurement
@@ -173,10 +195,12 @@ class EKF:
         for i in range(self.N):
 
             # predicted acceleration due to gravity
-            link_to_head = self.forward_kinematics(i, self.state.theta)
-            head_to_body = ... # virtual chassis frame transform
-            world_to_link = self.state.R @ head_to_body @ link_to_head # TODO: is this right? opposite of what is in the paper
-            accel_g = world_to_link @ self.g
+            link_to_head = self.forward_kinematics(i, self.state.theta).rotation()
+            body_to_head = self.VC_to_Head # virtual chassis frame transform
+            link_to_body = body_to_head.T @ link_to_head
+
+            normalized = self.state.q / np.linalg.norm(self.state.q)
+            body_to_world = SO3(self.state.q).transform()
     
             # predicted acceleration due to internal motion
             accel_internal = ... # TODO
@@ -218,5 +242,6 @@ if __name__ == '__main__':
     test_ekf.state.w = np.array([1, 2.5, 0.5])
     test_ekf.state.q = np.array([0, 1, 0, 0])
     F = test_ekf.process_jacobian(0.1)
-    print(np.array_str(F, precision=4, suppress_small=True))
+    # print(np.array_str(F, precision=4, suppress_small=True))
+    test_ekf.tempy(1, [1, 0, 0, 0])
 

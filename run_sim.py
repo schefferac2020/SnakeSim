@@ -75,7 +75,10 @@ def run():
         snake.set_motors(angles)
 
         # Prediction step of the EKF
+        ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
+
         ekf.process_model(dt)
+        
         ekf_transform = to_SE3(np.array([0, 0, 0]), ekf.state.q)
         draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
         

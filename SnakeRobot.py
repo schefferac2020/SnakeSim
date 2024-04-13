@@ -253,7 +253,7 @@ class SnakeRobot:
 
         # Iterate over each child link
         for link_idx in range(num_child_links):
-            lin_acc, ang_vel = p.getLinkState(self._snakeID, 2*link_idx, computeLinkVelocity=True)[6:8]
+            lin_acc, ang_vel = p.getLinkState(self._snakeID, 1+2*link_idx, computeLinkVelocity=True)[6:8]
 
             if add_noise:
                 lin_acc_std_dev = 0

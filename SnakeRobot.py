@@ -5,7 +5,7 @@ import pybullet as p
 from utils import draw_frame, to_SE3, forward_kinematics
 
 class SnakeRobot:
-    def __init__(self, length, client, head_position, head_orientation, mode="position") -> None:
+    def __init__(self, length, link_length, client, head_position, head_orientation, mode="position") -> None:
         """Initialise SnakeBot
 
         Args:
@@ -20,7 +20,7 @@ class SnakeRobot:
         self._mode = mode
 
         self.link_mass = 1
-        self.link_length = 0.5
+        self.link_length = link_length
         self.lateral_friction = 5
         self.anistropic_friction = [1, 1, 1]
         self._snakeID = self.create_snake(head_position, head_orientation)
@@ -31,6 +31,8 @@ class SnakeRobot:
         self.prev_V = None
         self.T_virtual_chassis_wrt_base = np.eye(4)
         self.T_body_to_world = np.eye(4)
+
+        self.g = np.array([0, 0, -9.81])
 
     def create_snake(self, head_position, head_orientation):
         """Creates a snake multiBody object
@@ -240,6 +242,7 @@ class SnakeRobot:
 
         # Get the base link
         lin_acc, ang_vel = p.getBaseVelocity(self._snakeID)
+        lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
         if add_noise:
             lin_acc_std_dev = 0
             ang_vel_std_dev = 0
@@ -254,6 +257,7 @@ class SnakeRobot:
         # Iterate over each child link
         for link_idx in range(num_child_links):
             lin_acc, ang_vel = p.getLinkState(self._snakeID, 1+2*link_idx, computeLinkVelocity=True)[6:8]
+            # TODO: Add the gravity vector here
 
             if add_noise:
                 lin_acc_std_dev = 0

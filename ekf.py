@@ -1,6 +1,7 @@
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
+from utils import forward_kinematics
 
 
 class EKF:
@@ -101,3 +102,5 @@ class EKF:
             gyro[3*i:3*(i+1)] = gyro_internal + link_to_body.T @ self.state.w
         return gyro
     
+    def forward_kinematics(self, i: int, theta: NDArray) -> SE3:
+        return forward_kinematics(i, self.l, theta)

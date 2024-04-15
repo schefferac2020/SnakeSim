@@ -121,10 +121,10 @@ Variable Conventions:
     \end{bmatrix} \in \mathbb{R}^{6N} \\
     \hat{\alpha}_k^i &= (W_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
     % &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
-    \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \approx \frac{v_k^i - v_{k-1}^i}{\Delta t} \approx \frac{p_k^i - 2p_{k-1}^i + p_{k-2}^i}{\Delta t^2} \\
+    \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \approx C_k^\top \frac{v_k^i - v_{k-1}^i}{\Delta t} \approx C_k^\top \frac{p_k^i - 2p_{k-1}^i + p_{k-2}^i}{\Delta t^2} \\
     \hat{\gamma}_k^i &= (W_k^i)^\top \omega_k + \hat{\omega}^i_{\text{internal}} \\
-    \hat{\omega}^i_{\text{internal}} &= C_k^\top\left(\dot{R}_k^i(R_k^i)^\top\right)^\vee \\
-    &= \left((W_k^i)^\top \dot{W}_k^i\right)^\vee \approx \frac{\text{Log}\left((W_k^i)^\top W_k^i\right)}{\Delta t} \approx \left(\frac{(W_k^i)^\top W_k^i}{\Delta t} - I\right)^\vee
+    \hat{\omega}^i_{\text{internal}} &= C_k^\top\left(\dot{R}_k^i(R_{k}^i)^\top\right)^\vee \\
+    &= \left((W_k^i)^\top \dot{W}_{k}^i\right)^\vee \approx \frac{\text{Log}\left((W_k^i)^\top W_{k-1}^i\right)}{\Delta t} \approx \left(\frac{(W_k^i)^\top W_{k-1}^i}{\Delta t} - I\right)^\vee
 \end{align*}
 \begin{align*}
     \hat{\mathbf{z}}_k &= h(\mathbf{x}_k) \\

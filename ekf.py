@@ -33,6 +33,12 @@ class EKF:
         self.g = np.array([0, 0, -9.81])
 
         self.VC_to_Body = np.eye(4)
+
+        # initialize previous time steps for computing derivatives
+        self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.N)])
+        self.p_prev_prev = np.copy(self.p_prev)
+        self.W_prev = np.array([SO3(self.forward_kinematics(i, self.thetas).quat()) for i in range(self.N)])
+        
     
     def set_VC_Transform(self, VC_to_Head_in):
         self.VC_to_Head = VC_to_Head_in
@@ -140,6 +146,9 @@ class EKF:
         jacobi = np.concatenate((mt1, mt2, mt3)).reshape(10, 10).T
         return jacobi
 
+    def measurement_jacobian(self) -> NDArray:
+        # TODO: Implement this
+        return np.zeros((6*self.N, 10))
 
     def predict(self, dt: float) -> None:
         """
@@ -171,7 +180,7 @@ class EKF:
         return np.array(result.subs(zippy))
 
 
-    def update(self, encoders, accelerations, gyros) -> None:
+    def update(self, encoders, accelerations, gyros, dt) -> None:
         """
         """
         self.thetas = encoders
@@ -181,7 +190,7 @@ class EKF:
         
         m_vec = np.concatenate([accelerations, gyros])
         pred_vec = np.concatenate([predicted_accelerations, predicted_gyroscope]) 
-        H = ... # TODO: AYYYYYYYYYYYYYYYYYYYYYYYYYYY DO THIS
+        H = self.measurement_jacobian()
 
         innovation = m_vec - pred_vec
         S = H @ self.P @ H.T + self.R
@@ -189,42 +198,49 @@ class EKF:
         self.state = self.state + K @ innovation
         self.P = (np.eye(self.N) - K @ H) @ self.P
 
-    def acceleration_prediction(self) -> NDArray:
+    def acceleration_prediction(self, dt) -> NDArray:
         accel = np.zeros(3 * self.N)
         for i in range(self.N):
 
             # predicted acceleration due to gravity
-            link_to_head = self.forward_kinematics(i).rotation()
-            body_to_head = self.VC_to_Head # virtual chassis frame transform
-            link_to_body = body_to_head.T @ link_to_head
+            link_to_head = self.forward_kinematics(i, self.thetas)
+            R_link_to_head = link_to_head.rotation()
+            p_link_to_head = link_to_head.translation()
+            R_body_to_head = self.VC_to_Head[:3, :3]
+            link_to_body = R_body_to_head.T @ R_link_to_head
 
             body_to_world = SO3(wxyz_too_xyzw(self.state.q)).transform()
 
             # predicted acceleration due to internal motion
-            accel_internal = ... # TODO pk double dot
+            link_accel_in_head = (p_link_to_head - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2)
+            self.p_prev_prev[:, i] = self.p_prev[:, i]
+            self.p_prev[:, i] = p_link_to_head
 
-            accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + body_to_head.T @ accel_internal 
+            accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + R_body_to_head.T @ link_accel_in_head 
 
             # predicted acceleration from robot motion
             accel[3*i:3*(i+1)] = accel_pred
         return accel
     
-    def gyroscope_prediction(self) -> NDArray:
+    def gyroscope_prediction(self, dt) -> NDArray:
         gyro = np.zeros(3 * self.N)
         for i in range(self.N):
-            link_to_head = self.forward_kinematics(i)
-            body_to_head = self.VC_to_Head
-            link_to_body = body_to_head.T @ link_to_head
+            link_to_head = self.forward_kinematics(i, self.thetas)
+            R_link_to_head = link_to_head.rotation()
+            R_body_to_head = self.VC_to_Head[:3, :3]
+            link_to_body = R_body_to_head.T @ R_link_to_head
             
-            gyro_internal = ... # TODO pk double dot
+            W = SO3(link_to_body.quat())
+            gyro_internal = self.W_prev[i].rminus(W).coeffs() / dt
+            self.W_prev[i] = W
             
             gyro_pred = link_to_body.T @ self.state.w + gyro_internal
 
             gyro[3*i:3*(i+1)] = gyro_pred
         return gyro
     
-    def forward_kinematics(self, i):
-        return forward_kinematics(i, self.l, self.thetas)
+    def forward_kinematics(self, i, thetas):
+        return forward_kinematics(i, self.l, thetas)
     
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
@@ -9,24 +9,25 @@ class EKF:
     # from (our head)
     @dataclass
     class State:
-        a: NDArray  # World frame acceleration
-        q: NDArray  # World frame orientation
-        w: NDArray  # World frame angular velocityes
+        a: NDArray = field(default_factory=lambda: np.zeros(3))
+        q: NDArray = field(default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0]))
+        w: NDArray = field(default_factory=lambda: np.zeros(3))
 
-        def __init__(self, a=np.array([0.0, 0.0, 0.0]), q = np.array([1.0, 0.0, 0.0, 0.0]), w=np.array([0.0, 0.0, 0.0])):
-            self.a = a
-            self.q = q
-            self.w = w
+        # def __init__(self, a=np.array([0.0, 0.0, 0.0]), q = np.array([1.0, 0.0, 0.0, 0.0]), w=np.array([0.0, 0.0, 0.0])):
+        #     self.a = a
+        #     self.q = q
+        #     self.w = w
 
     def __init__(self, num_joints: int, link_length: float ) -> None:
         self.N = num_joints
         self.l = link_length
         self.state = self.State()
-        self.P = np.eye(self.N) * 1e-6
-        self.Q = np.eye(self.N) * 1e-6
+        self.P = np.eye(10) * 1e-6
+        self.Q = np.eye(10) * 1e-6
+        self.R = np.eye(6*(self.N + 1)) * 1e-6
         self.thetas = np.zeros(self.N)
         
-        # self.state.q = np.array([[1, 0, 0, 0]]).T #qw qx qy qz
+        # self.state.q = np.array([[1.0, 0, 0, 0]]).T #qw qx qy qz
 
         self.tau = 25 # Acceleration damping
 
@@ -148,7 +149,7 @@ class EKF:
 
     def measurement_jacobian(self) -> NDArray:
         # TODO: Implement this
-        return np.zeros((6*self.N, 10))
+        return np.zeros((6*(self.N + 1), 10))
 
     def predict(self, dt: float) -> None:
         """
@@ -157,8 +158,10 @@ class EKF:
         """
 
         # predict state with process model(self.state, u, dt)
-        self.state = self.process_model(dt)
+        self.process_model(dt)
         F = self.process_jacobian(dt)
+        print(F.shape)
+        print(self.P.shape)
         # T state dynamics
         self.P = F @ self.P @ F.T + self.Q
 

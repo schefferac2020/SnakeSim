@@ -71,7 +71,7 @@ def run():
         # Prediction step of the EKF
         ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
 
-        # ekf.predict(dt)
+        ekf.predict(dt)
 
         ekf_transform = to_SE3(np.array([0, 0, 0]), ekf.state.q)
         draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)

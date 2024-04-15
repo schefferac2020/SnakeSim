@@ -19,13 +19,15 @@ class EKF:
         #     self.w = w
 
     def __init__(self, num_joints: int, link_length: float ) -> None:
-        self.N = num_joints
+        self.n_joints = num_joints
+        self.n_links = num_joints + 1
+        self.n_states = 10
         self.l = link_length
         self.state = self.State()
-        self.P = np.eye(10) * 1e-6
-        self.Q = np.eye(10) * 1e-6
-        self.R = np.eye(6*(self.N + 1)) * 1e-6
-        self.thetas = np.zeros(self.N)
+        self.P = np.eye(self.n_states) * 1e-1
+        self.Q = np.eye(self.n_states) * 1e-2
+        self.R = np.eye(6*self.n_links) * 1e-2
+        self.thetas = np.zeros(self.n_joints)
         
         # self.state.q = np.array([[1.0, 0, 0, 0]]).T #qw qx qy qz
 
@@ -36,9 +38,9 @@ class EKF:
         self.VC_to_head = SE3.Identity()
 
         # initialize previous time steps for computing derivatives
-        self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.N)]).T
+        self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.n_links)]).T
         self.p_prev_prev = np.copy(self.p_prev)
-        self.W_prev = np.array([SO3(self.forward_kinematics(i, self.thetas).quat()) for i in range(self.N)])
+        self.W_prev = np.array([SO3(self.forward_kinematics(i, self.thetas).quat()) for i in range(self.n_links)])
         
     
     def set_VC_Transform(self, VC_to_head_in):
@@ -149,14 +151,14 @@ class EKF:
 
     def measurement_jacobian(self) -> NDArray:
         # TODO: Implement this
-        H = np.zeros((6*(self.N + 1), 10))
-        for i in range(self.N + 1):
+        H = np.zeros((6*self.n_links, self.n_states))
+        for i in range(self.n_links):
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
             R_body_to_head = self.VC_to_head.rotation()
             link_to_body = R_body_to_head.T @ R_link_to_head
 
-            daccel_da = link_to_body.T @ SO3(wxyz_to_xyzw(self.state.q)).transform().T
+            daccel_da = link_to_body.T @ SO3(wxyz_to_xyzw(self.state.q)).rotation().T
             daccel_dqw = link_to_body.T @ self.dR_dq(0, self.state.q).T @ (self.g + self.state.a)
             daccel_dqx = link_to_body.T @ self.dR_dq(1, self.state.q).T @ (self.g + self.state.a)
             daccel_dqy = link_to_body.T @ self.dR_dq(2, self.state.q).T @ (self.g + self.state.a)
@@ -164,8 +166,8 @@ class EKF:
             dgyro_dw = link_to_body.T
             
             H[3*i:3*(i+1), 0:3] = daccel_da
-            H[3*i:3*(i+1), 3:7] = np.hstack([daccel_dqw, daccel_dqx, daccel_dqy, daccel_dqz])
-            offset = self.N + 1
+            H[3*i:3*(i+1), 3:7] = np.array([daccel_dqw, daccel_dqx, daccel_dqy, daccel_dqz]).T
+            offset = self.n_links
             H[offset + 3*i:offset + 3*(i+1), 7:10] = dgyro_dw
         return H
 
@@ -209,15 +211,21 @@ class EKF:
         innovation = m_vec - pred_vec
         S = H @ self.P @ H.T + self.R
         K = self.P @ H.T @ np.linalg.inv(S)
-        self.state = self.state + K @ innovation
-        self.P = (np.eye(self.N) - K @ H) @ self.P
+
+        state_vec = np.concatenate([self.state.a, self.state.q, self.state.w])
+        state_vec = state_vec + K @ innovation
+        self.state.a = state_vec[0:3]
+        self.state.q = state_vec[3:7]
+        self.state.w = state_vec[7:10]
+        
+        self.P = (np.eye(self.n_states) - K @ H) @ self.P
         
         # normalize quaternion to prevent divergence
         self.state.q /= np.linalg.norm(self.state.q)
 
     def acceleration_prediction(self, dt) -> NDArray:
-        accel = np.zeros(3 * self.N)
-        for i in range(self.N):
+        accel = np.zeros(3 * self.n_links)
+        for i in range(self.n_links):
 
             # predicted acceleration due to gravity
             link_to_head = self.forward_kinematics(i, self.thetas)
@@ -241,14 +249,14 @@ class EKF:
         return accel
     
     def gyroscope_prediction(self, dt) -> NDArray:
-        gyro = np.zeros(3 * self.N)
-        for i in range(self.N):
+        gyro = np.zeros(3 * self.n_links)
+        for i in range(self.n_links):
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
             R_body_to_head = self.VC_to_head.rotation()
             link_to_body = R_body_to_head.T @ R_link_to_head
             
-            W = SO3(link_to_body.quat())
+            W = SO3(self.VC_to_head.quat()).inverse() * SO3(link_to_head.quat())
             gyro_internal = self.W_prev[i].rminus(W).coeffs() / dt
             self.W_prev[i] = W
             

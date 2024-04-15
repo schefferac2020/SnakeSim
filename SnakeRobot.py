@@ -272,8 +272,8 @@ class SnakeRobot:
             curr_imu_data = np.hstack((lin_acc, ang_vel))
             imu_data = np.vstack((imu_data, curr_imu_data))
         
-        accel = imu_data[:, 0:3]
-        gyro = imu_data[:, 3:6]
+        accel = imu_data[:, 0:3].reshape(-1)
+        gyro = imu_data[:, 3:6].reshape(-1)
         return accel, gyro
 
     def update_virtual_chassis_frame(self, debug=True):

@@ -4,12 +4,10 @@ import pybullet as p
 
 
 class Terrain:
-    def __init__(self, client):
+    def __init__(self):
         """
         Make the terrain
         """
-
-        self._client = client
 
         rows, cols = 16, 16
         lateral_scale = 2
@@ -25,12 +23,12 @@ class Terrain:
                     octaves=6, persistence=0.5, lacunarity=2.0, base=0,
                 )
 
-        self.terrain_shape = self._client.createCollisionShape(
+        self.terrain_shape = p.createCollisionShape(
             shapeType=p.GEOM_HEIGHTFIELD, heightfieldData=self.heightmap.T.reshape(-1),
             heightfieldTextureScaling=rows - 1,
             numHeightfieldRows=rows, numHeightfieldColumns=cols,
         )
-        self.terrain_multi_body = self._client.createMultiBody(0, self.terrain_shape)
+        self.terrain_multi_body = p.createMultiBody(0, self.terrain_shape)
 
         # Precompute normals
         # self.normals = np.zeros((cols, rows, 3), dtype=float)

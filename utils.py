@@ -21,11 +21,14 @@ def to_SE3(position, orientation) -> NDArray:
 
 def R_to_q(R: NDArray):
     """Convert rotation matrix to quaternion"""
+
     q = np.zeros(4)
     q[0] = np.sqrt(1 + R[0, 0] + R[1, 1] + R[2, 2]) / 2
     q[1] = (R[2, 1] - R[1, 2]) / (4 * q[0])
     q[2] = (R[0, 2] - R[2, 0]) / (4 * q[0])
     q[3] = (R[1, 0] - R[0, 1]) / (4 * q[0])
+
+    q = q / np.linalg.norm(q)
     return q
 
 

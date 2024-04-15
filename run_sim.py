@@ -10,7 +10,7 @@ from utils import draw_frame, to_SE3, make_so3_nonstupid
 
 
 def run():
-    dt = 1. / 240.
+    dt = 1. / 60.
 
     # Setup pybullet client
     p.connect(p.GUI)
@@ -18,6 +18,7 @@ def run():
     p.setGravity(0, 0, -10)
     p.setRealTimeSimulation(1)
     p.setTimeStep(dt)
+
 
     # Make the terrain
     # terrain = Terrain()
@@ -100,6 +101,7 @@ def run():
 
         # time.sleep(dt)
         t_sim += dt
+        print(t_sim)
 
     p.disconnect()
 

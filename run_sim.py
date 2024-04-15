@@ -4,8 +4,10 @@ import pybullet_data
 from manifpy import SE3Tangent
 
 from ekf import EKF
+from particle_filter import TerrainParticleFilter
 from snake_controller import SnakeController
 from snake_robot import SnakeRobot
+from terrain import Terrain
 from utils import draw_frame, to_SE3, make_so3_nonstupid
 
 
@@ -21,8 +23,8 @@ def run():
 
 
     # Make the terrain
-    # terrain = Terrain()
-    p.loadURDF("plane.urdf")
+    terrain = Terrain()
+    # p.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8  # links other than the red head
@@ -32,14 +34,14 @@ def run():
     ekf = EKF(N, link_length)
     ekf.state.w = np.array([0, 0.5, 0])
 
-    # pf = TerrainParticleFilter(100, N, terrain)
+    pf = TerrainParticleFilter(N, 100, terrain)
 
     forward_cmd = 0
     turn_cmd = 0
 
     # Simulate
     t_sim = 0
-    while True:
+    while p.isConnected():
 
         p.stepSimulation()
         snake.update_virtual_chassis_frame()
@@ -91,13 +93,23 @@ def run():
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
-        # pf.prediction(orientation, twist)
+        pf.prediction(orientation, twist)
 
         # TODO: make this a snake function
+        contact_normals = []
         contacts = p.getContactPoints()
         if contacts:
             for contact in contacts:
                 _, _, a_id, b_id, _, contact_position_on_a, contact_position_on_b, contact_normal_on_b, *_ = contact
+                # Collider A always seems to have the lower id
+                # I think the terrain is 0 as it is added first
+                if a_id == 0:
+                    contact_normals.append((b_id, contact_normal_on_b))
+
+        pf.correction(contact_normals)
+
+        doink = pf.filter()
+        print(doink)
 
         # time.sleep(dt)
         t_sim += dt

@@ -242,8 +242,8 @@ class SnakeRobot:
 
         lin_acc = (self.prev_lin_vel[0, :] - lin_vel) / dt
         self.prev_lin_vel[0, :] = lin_vel
-        print("accel: ", lin_acc)
-        print("dt: ", dt)
+        # print("accel: ", lin_acc)
+        # print("dt: ", dt)
 
         # print(p.getBaseVelocity(self._snakeID))
         lin_acc += self.T_body_to_world[:3, :3].T @ self.g  # Add Gravity Vector

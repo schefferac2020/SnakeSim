@@ -34,7 +34,7 @@ def run():
     ekf = EKF(N, link_length)
     ekf.state.w = np.array([0, 0.5, 0])
 
-    pf = TerrainParticleFilter(100, N, terrain)
+    # pf = TerrainParticleFilter(100, N, terrain)
 
     forward_cmd = 0
     turn_cmd = 0
@@ -62,7 +62,7 @@ def run():
                 turn_cmd = 0
 
         # angles = controller.rolling_gait(t_sim)
-        angles = controller.inchworm_gait(t_sim, 10 * forward_cmd, -0.2 * turn_cmd)
+        angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
         # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
 
         # angles = [0, 0.5]* 8
@@ -77,8 +77,12 @@ def run():
         draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Get Measuremnts
-        encoders = ...
+        encoders = snake.get_joint_angles()
+        # print(encoders)
         [accelerometers, gyros] = snake.get_imu_data()
+        # print(accelerometers)
+        # print(gyros)
+        # print(snake.get_imu_data())
 
         # Update Step of EKF
         # ekf.update(encoders, accelerometers, gyros)
@@ -86,7 +90,7 @@ def run():
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
-        pf.prediction(orientation, twist)
+        # pf.prediction(orientation, twist)
 
         # TODO: make this a snake function
         contacts = p.getContactPoints()

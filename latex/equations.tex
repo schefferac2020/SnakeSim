@@ -118,7 +118,7 @@ Variable Conventions:
     W_k^i &= C_k^\top R_k^i \\
     \mathbf{z}_k &= \begin{bmatrix}
         \alpha_k \\ \gamma_k
-    \end{bmatrix} \in \mathbb{R}^{6N} \\
+    \end{bmatrix} \in \mathbb{R}^{6(N+1)} \\
     \hat{\alpha}_k^i &= (W_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
     % &= (C_k^\top R_k^i)^\top R_k^\top (g + a_k) + \hat{a}^i_{\text{internal}} \\
     \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \approx C_k^\top \frac{v_k^i - v_{k-1}^i}{\Delta t} \approx C_k^\top \frac{p_k^i - 2p_{k-1}^i + p_{k-2}^i}{\Delta t^2} \\

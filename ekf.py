@@ -13,7 +13,7 @@ class EKF:
         q: NDArray  # World frame orientation
         w: NDArray  # World frame angular velocityes
 
-        def __init__(self, a=np.array([0, 0, 0]), q = np.array([1, 0, 0, 0]), w=np.array([0, 0, 0])):
+        def __init__(self, a=np.array([0.0, 0.0, 0.0]), q = np.array([1.0, 0.0, 0.0, 0.0]), w=np.array([0.0, 0.0, 0.0])):
             self.a = a
             self.q = q
             self.w = w

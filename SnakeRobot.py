@@ -242,6 +242,7 @@ class SnakeRobot:
 
         # Get the base link
         lin_acc, ang_vel = p.getBaseVelocity(self._snakeID)
+        # print(p.getBaseVelocity(self._snakeID))
         lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
         if add_noise:
             lin_acc_std_dev = 0
@@ -257,6 +258,7 @@ class SnakeRobot:
         # Iterate over each child link
         for link_idx in range(num_child_links):
             lin_acc, ang_vel = p.getLinkState(self._snakeID, 1+2*link_idx, computeLinkVelocity=True)[6:8]
+            lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
             # TODO: Add the gravity vector here
 
             if add_noise:
@@ -270,7 +272,9 @@ class SnakeRobot:
             curr_imu_data = np.hstack((lin_acc, ang_vel))
             imu_data = np.vstack((imu_data, curr_imu_data))
         
-        return imu_data
+        accel = imu_data[:, 0:3]
+        gyro = imu_data[:, 3:6]
+        return accel, gyro
 
     def update_virtual_chassis_frame(self, debug=True):
         """ Updates the position of the virtual chassis with respect to the body frame (self.T_virtual_chassis_wrt_base)

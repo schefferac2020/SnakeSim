@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
-from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_too_xyzw
+from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_to_xyzw
 
 class EKF:
     # from (our head)
@@ -36,7 +36,7 @@ class EKF:
         self.VC_to_Body = np.eye(4)
 
         # initialize previous time steps for computing derivatives
-        self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.N)])
+        self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.N)]).T
         self.p_prev_prev = np.copy(self.p_prev)
         self.W_prev = np.array([SO3(self.forward_kinematics(i, self.thetas).quat()) for i in range(self.N)])
         
@@ -149,24 +149,35 @@ class EKF:
 
     def measurement_jacobian(self) -> NDArray:
         # TODO: Implement this
-        return np.zeros((6*(self.N + 1), 10))
+        H = np.zeros((6*(self.N + 1), 10))
+        for i in range(self.N + 1):
+            link_to_head = self.forward_kinematics(i, self.thetas)
+            R_link_to_head = link_to_head.rotation()
+            R_body_to_head = self.VC_to_Head[:3, :3]
+            link_to_body = R_body_to_head.T @ R_link_to_head
+
+            daccel_da = link_to_body.T @ SO3(wxyz_to_xyzw(self.state.q)).transform().T
+            daccel_dqw = link_to_body.T @ self.dR_dq(0, self.state.q).T @ (self.g + self.state.a)
+            daccel_dqx = link_to_body.T @ self.dR_dq(1, self.state.q).T @ (self.g + self.state.a)
+            daccel_dqy = link_to_body.T @ self.dR_dq(2, self.state.q).T @ (self.g + self.state.a)
+            daccel_dqz = link_to_body.T @ self.dR_dq(3, self.state.q).T @ (self.g + self.state.a)
+            dgyro_dw = link_to_body.T
+            
+            H[3*i:3*(i+1), 0:3] = daccel_da
+            H[3*i:3*(i+1), 3:7] = np.hstack([daccel_dqw, daccel_dqx, daccel_dqy, daccel_dqz])
+            offset = self.N + 1
+            H[offset + 3*i:offset + 3*(i+1), 7:10] = dgyro_dw
+        return H
 
     def predict(self, dt: float) -> None:
-        """
-        :param u:   Commanded joint velocities
-        :param dt:  Time step
-        """
-
-        # predict state with process model(self.state, u, dt)
         self.process_model(dt)
+        self.state.q /= np.linalg.norm(self.state.q)
+        
         F = self.process_jacobian(dt)
-        print(F.shape)
-        print(self.P.shape)
-        # T state dynamics
         self.P = F @ self.P @ F.T + self.Q
 
 
-    def tempy(self, i: int, q_in: NDArray):
+    def dR_dq(self, i: int, q_in: NDArray):
         from sympy.abc import w, x, y, z
         from sympy import Matrix
 
@@ -188,8 +199,8 @@ class EKF:
         """
         self.thetas = encoders
 
-        predicted_accelerations = self.acceleration_prediction()
-        predicted_gyroscope = self.gyroscope_prediction()
+        predicted_accelerations = self.acceleration_prediction(dt)
+        predicted_gyroscope = self.gyroscope_prediction(dt)
         
         m_vec = np.concatenate([accelerations, gyros])
         pred_vec = np.concatenate([predicted_accelerations, predicted_gyroscope]) 
@@ -200,6 +211,9 @@ class EKF:
         K = self.P @ H.T @ np.linalg.inv(S)
         self.state = self.state + K @ innovation
         self.P = (np.eye(self.N) - K @ H) @ self.P
+        
+        # normalize quaternion to prevent divergence
+        self.state.q /= np.linalg.norm(self.state.q)
 
     def acceleration_prediction(self, dt) -> NDArray:
         accel = np.zeros(3 * self.N)
@@ -212,7 +226,7 @@ class EKF:
             R_body_to_head = self.VC_to_Head[:3, :3]
             link_to_body = R_body_to_head.T @ R_link_to_head
 
-            body_to_world = SO3(wxyz_too_xyzw(self.state.q)).transform()
+            body_to_world = SO3(wxyz_to_xyzw(self.state.q)).transform()
 
             # predicted acceleration due to internal motion
             link_accel_in_head = (p_link_to_head - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2)
@@ -253,5 +267,5 @@ if __name__ == '__main__':
     test_ekf.state.q = np.array([0, 1, 0, 0])
     F = test_ekf.process_jacobian(0.1)
     # print(np.array_str(F, precision=4, suppress_small=True))
-    test_ekf.tempy(1, [1, 0, 0, 0])
+    test_ekf.dR_dq(1, [1, 0, 0, 0])
 

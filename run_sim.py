@@ -85,7 +85,7 @@ def run():
         # print(snake.get_imu_data())
 
         # Update Step of EKF
-        # ekf.update(encoders, accelerometers, gyros)
+        ekf.update(encoders, accelerometers, gyros, dt)
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)

@@ -132,26 +132,26 @@ Variable Conventions:
         % \theta_k \\
         (W_k^1)^\top R_k^\top (g + a_k) + \hat{a}^1_{\text{internal}} \\
         \vdots \\
-        (W_k^N)^\top R_k^\top (g + a_k) + \hat{a}^N_{\text{internal}} \\
+        (W_k^{N+1})^\top R_k^\top (g + a_k) + \hat{a}^{N+1}_{\text{internal}} \\
         (W_k^1)^\top \omega_k + \hat{\omega}^1_{\text{internal}} \\
         \vdots \\
-        (W_k^N)^\top \omega_k + \hat{\omega}^N_{\text{internal}} \\
+        (W_k^{N+1})^\top \omega_k + \hat{\omega}^{N+1}_{\text{internal}} \\
     \end{bmatrix} \\
     % \hat{a}^i_{\text{internal}} &= C_k^\top \ddot{p}_k^i \\
     H_k &= \pd{h}{\mathbf{x}_k} = \begin{bmatrix}
         \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & \pd{\hat{\alpha}^1_k}{\omega_k} \\
         \vdots & \vdots & \vdots \\
-        \pd{\hat{\alpha}^N_k}{a_k} & \pd{\hat{\alpha}^N_k}{q_k} & \pd{\hat{\alpha}^N_k}{\omega_k} \\
+        \pd{\hat{\alpha}^{N+1}_k}{a_k} & \pd{\hat{\alpha}^{N+1}_k}{q_k} & \pd{\hat{\alpha}^{N+1}_k}{\omega_k} \\
         \pd{\hat{\gamma}^1_k}{a_k} & \pd{\hat{\gamma}^1_k}{q_k} & \pd{\hat{\gamma}^1_k}{\omega_k} \\
         \vdots & \vdots & \vdots \\
-        \pd{\hat{\gamma}^N_k}{a_k} & \pd{\hat{\gamma}^N_k}{q_k} & \pd{\hat{\gamma}^N_k}{\omega_k} \\
+        \pd{\hat{\gamma}^{N+1}_k}{a_k} & \pd{\hat{\gamma}^{N+1}_k}{q_k} & \pd{\hat{\gamma}^{N+1}_k}{\omega_k} \\
     \end{bmatrix} = \begin{bmatrix}
         \pd{\hat{\alpha}^1_k}{a_k} & \pd{\hat{\alpha}^1_k}{q_k} & 0 \\
         \vdots & \vdots & \vdots \\
-        \pd{\hat{\alpha}^N_k}{a_k} & \pd{\hat{\alpha}^N_k}{q_k} & 0 \\
+        \pd{\hat{\alpha}^{N+1}_k}{a_k} & \pd{\hat{\alpha}^{N+1}_k}{q_k} & 0 \\
         0 & 0 & \pd{\hat{\gamma}^1_k}{\omega_k} \\
         \vdots & \vdots & \vdots \\
-        0 & 0 & \pd{\hat{\gamma}^N_k}{\omega_k} \\
+        0 & 0 & \pd{\hat{\gamma}^{N+1}_k}{\omega_k} \\
     \end{bmatrix} \\
     \pd{\hat{\alpha}^i_k}{a_k} &= \pd{}{a_k} \left((W_k^i)^\top R_k^\top (g + a_k)\right) + \pd{}{a_k} \hat{a}^i_{\text{internal}} \\
     &= \pd{}{a_k} \left((W_k^i)^\top R_k^\top g\right) + \pd{}{a_k} \left((W_k^i)^\top R_k^\top a_k\right) + 0 \\ 

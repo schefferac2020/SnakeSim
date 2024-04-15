@@ -98,7 +98,7 @@ def make_so3_nonstupid(q) -> SO3:
     nq /= np.linalg.norm(nq)
     return SO3(nq)
 
-def wxyz_too_xyzw(q):
+def wxyz_to_xyzw(q):
     q_new = np.roll(q, -1)
     return q_new/np.linalg.norm(q_new)
 

@@ -247,11 +247,10 @@ class SnakeRobot:
 
         lin_acc = (self.prev_lin_vel[0,:] - lin_vel) / dt
         self.prev_lin_vel[0, :] = lin_vel
-        print("accel: ", lin_acc)
-        print("dt: ", dt)
+        print("lin vel: ", lin_vel)
 
         # print(p.getBaseVelocity(self._snakeID))
-        lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
+        # lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
         if add_noise:
             lin_acc_std_dev = 0
             ang_vel_std_dev = 0
@@ -280,7 +279,7 @@ class SnakeRobot:
             # body is actually the head lol
             T_link_to_body = forward_kinematics(link_idx+1, self.link_length, self.get_joint_angles()).transform()
             R_body_to_link = T_link_to_body[0:3, 0:3].T
-            lin_acc += R_body_to_link @ self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
+            # lin_acc += R_body_to_link @ self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
 
             # Draw accelerations in the worldframe! 
             lin_acc_world = self.T_body_to_world[:3, :3] @ R_body_to_link.T @ lin_acc

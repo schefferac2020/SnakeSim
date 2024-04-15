@@ -41,7 +41,8 @@ def run():
 
     # Simulate
     t_sim = 0
-    for i in range(10000000):
+    while True:
+        
         client.stepSimulation()
         snake.update_virtual_chassis_frame()
 
@@ -72,20 +73,23 @@ def run():
         ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
 
         ekf.predict(dt)
+        
 
-        ekf_transform = to_SE3(np.array([0, 0, 0]), ekf.state.q)
+        VC_pos = (snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base)[0:3,3]
+        ekf_transform = to_SE3(np.array(VC_pos), ekf.state.q)
         draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Get Measuremnts
         encoders = snake.get_joint_angles()
         # print(encoders)
-        [accelerometers, gyros] = snake.get_imu_data()
+        [accelerometers, gyros] = snake.get_imu_data(dt, debug=True)
+
         # print(accelerometers)
         # print(gyros)
         # print(snake.get_imu_data())
 
         # Update Step of EKF
-        ekf.update(encoders, accelerometers, gyros, dt)
+        # ekf.update(encoders, accelerometers, gyros, dt)
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)

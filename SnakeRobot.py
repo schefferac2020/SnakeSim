@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import pybullet as p
-from utils import draw_frame, to_SE3, forward_kinematics
+from utils import draw_frame, draw_line, to_SE3, forward_kinematics
 
 class SnakeRobot:
     def __init__(self, length, link_length, client, head_position, head_orientation, mode="position") -> None:
@@ -31,6 +31,8 @@ class SnakeRobot:
         self.prev_V = None
         self.T_virtual_chassis_wrt_base = np.eye(4)
         self.T_body_to_world = np.eye(4)
+
+        self.prev_lin_vel = np.zeros((length + 1, 3))
 
         self.g = np.array([0, 0, -9.81])
 
@@ -229,7 +231,7 @@ class SnakeRobot:
 
         return obs.astype(np.float32)
 
-    def get_imu_data(self, add_noise=False):
+    def get_imu_data(self, dt, add_noise=False, debug=False):
         """Reads in the IMU data for each link. The accelerometer does not have gravity in it. 
             No need to subtract out gravity as, when snake is still, accelerometers read zero.
 
@@ -241,7 +243,13 @@ class SnakeRobot:
         imu_data = np.empty((0, 6))
 
         # Get the base link
-        lin_acc, ang_vel = p.getBaseVelocity(self._snakeID)
+        lin_vel, ang_vel = p.getBaseVelocity(self._snakeID)
+
+        lin_acc = (self.prev_lin_vel[0,:] - lin_vel) / dt
+        self.prev_lin_vel[0, :] = lin_vel
+        print("accel: ", lin_acc)
+        print("dt: ", dt)
+
         # print(p.getBaseVelocity(self._snakeID))
         lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
         if add_noise:
@@ -255,11 +263,31 @@ class SnakeRobot:
         imu_data = np.vstack((imu_data, curr_imu_data))
 
 
+        # Plot the lin accel of head (body) link
+        lin_acc_world = self.T_body_to_world[:3, :3] @ lin_acc
+        body_world_position = self.T_body_to_world[:3, 3]
+
+        if debug:
+            draw_line(self._client, self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world, [1, 1, 0])
+
         # Iterate over each child link
         for link_idx in range(num_child_links):
-            lin_acc, ang_vel = p.getLinkState(self._snakeID, 1+2*link_idx, computeLinkVelocity=True)[6:8]
-            lin_acc += self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
-            # TODO: Add the gravity vector here
+            lin_vel, ang_vel = p.getLinkState(self._snakeID, 1+2*link_idx, computeLinkVelocity=True)[6:8]
+
+            lin_acc = (self.prev_lin_vel[link_idx + 1,:] - lin_vel) / dt
+            self.prev_lin_vel[link_idx + 1, :] = lin_vel
+            
+            # body is actually the head lol
+            T_link_to_body = forward_kinematics(link_idx+1, self.link_length, self.get_joint_angles()).transform()
+            R_body_to_link = T_link_to_body[0:3, 0:3].T
+            lin_acc += R_body_to_link @ self.T_body_to_world[:3, :3].T @ self.g # Add Gravity Vector
+
+            # Draw accelerations in the worldframe! 
+            lin_acc_world = self.T_body_to_world[:3, :3] @ R_body_to_link.T @ lin_acc
+            link_world_position = (self.T_body_to_world @ T_link_to_body)[0:3, 3]
+            # lin_acc
+            if debug:
+                draw_line(self._client, self.debug_items, f"{link_idx}_imu_accel", link_world_position, link_world_position + lin_acc_world, [1, 1, 0])
 
             if add_noise:
                 lin_acc_std_dev = 0

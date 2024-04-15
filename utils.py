@@ -28,6 +28,17 @@ def R_to_q(R: NDArray):
     return q
 
 
+def draw_line(client, debug_items, line_name, position, direction, color, line_width = 2):
+    
+    if line_name not in debug_items.keys():
+        debug_items[line_name] = client.addUserDebugLine(position, direction, color, lineWidth=line_width)
+    else:
+        # Just update the current axes
+        replace_id = debug_items[line_name]
+
+        debug_items[line_name] = client.addUserDebugLine(position, direction, color, replaceItemUniqueId=replace_id, lineWidth=line_width)
+    
+
 def draw_frame(client, debug_items, frame_name, T_wrt_world):
     """
     Draws a frame in the world

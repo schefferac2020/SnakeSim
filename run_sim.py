@@ -1,14 +1,11 @@
 import numpy as np
 import pybullet as p
 import pybullet_data
-import pybullet_utils.bullet_client as bc
-from manifpy import SO3, SE3Tangent
+from manifpy import SE3Tangent
 
-from SnakeRobot import SnakeRobot
 from ekf import EKF
-from particle_filter import TerrainParticleFilter
 from snake_controller import SnakeController
-from terrain import Terrain
+from snake_robot import SnakeRobot
 from utils import draw_frame, to_SE3, make_so3_nonstupid
 
 
@@ -16,20 +13,20 @@ def run():
     dt = 1. / 240.
 
     # Setup pybullet client
-    client = bc.BulletClient(connection_mode=p.GUI)
-    client.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-    client.setGravity(0, 0, -10)
-    client.setRealTimeSimulation(0)
-    client.setTimeStep(dt)
+    p.connect(p.GUI)
+    p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
+    p.setGravity(0, 0, -10)
+    p.setRealTimeSimulation(1)
+    p.setTimeStep(dt)
 
     # Make the terrain
-    # terrain = Terrain(client)
-    client.loadURDF("plane.urdf")
+    # terrain = Terrain()
+    p.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8  # links other than the red head
     link_length = 0.5
-    snake = SnakeRobot(N, link_length, client, [0, 0, 5], [0, 0, 0, 1])
+    snake = SnakeRobot(N, link_length, [0, 0, 5], [0, 0, 0, 1])
     controller = SnakeController(N)
     ekf = EKF(N, link_length)
     ekf.state.w = np.array([0, 0.5, 0])
@@ -42,13 +39,13 @@ def run():
     # Simulate
     t_sim = 0
     while True:
-        
-        client.stepSimulation()
+
+        p.stepSimulation()
         snake.update_virtual_chassis_frame()
 
         snake.check_fwd_kinematics()
 
-        keys = client.getKeyboardEvents()
+        keys = p.getKeyboardEvents()
         for k, v in keys.items():
             if k == p.B3G_UP_ARROW and (v & p.KEY_WAS_TRIGGERED):
                 forward_cmd += 0.5
@@ -73,11 +70,10 @@ def run():
         ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
 
         ekf.predict(dt)
-        
 
-        VC_pos = (snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base)[0:3,3]
+        VC_pos = (snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base)[0:3, 3]
         ekf_transform = to_SE3(np.array(VC_pos), ekf.state.q)
-        draw_frame(client, snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
+        draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Get Measuremnts
         encoders = snake.get_joint_angles()
@@ -105,7 +101,7 @@ def run():
         # time.sleep(dt)
         t_sim += dt
 
-    client.disconnect()
+    p.disconnect()
 
 
 if __name__ == "__main__":

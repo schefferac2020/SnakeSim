@@ -3,3 +3,4 @@ gym
 matplotlib
 noise
 numpy
+sympy

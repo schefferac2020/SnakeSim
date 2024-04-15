@@ -18,6 +18,7 @@ def to_SE3(position, orientation) -> NDArray:
 
     return frame2_to_frame1
 
+
 def R_to_q(R: NDArray):
     """Convert rotation matrix to quaternion"""
     q = np.zeros(4)
@@ -28,23 +29,21 @@ def R_to_q(R: NDArray):
     return q
 
 
-def draw_line(client, debug_items, line_name, position, direction, color, line_width = 2):
-    
+def draw_line(debug_items, line_name, position, direction, color, line_width=2):
     if line_name not in debug_items.keys():
-        debug_items[line_name] = client.addUserDebugLine(position, direction, color, lineWidth=line_width)
+        debug_items[line_name] = p.addUserDebugLine(position, direction, color, lineWidth=line_width)
     else:
         # Just update the current axes
         replace_id = debug_items[line_name]
 
-        debug_items[line_name] = client.addUserDebugLine(position, direction, color, replaceItemUniqueId=replace_id, lineWidth=line_width)
-    
+        debug_items[line_name] = p.addUserDebugLine(position, direction, color, replaceItemUniqueId=replace_id, lineWidth=line_width)
 
-def draw_frame(client, debug_items, frame_name, T_wrt_world):
+
+def draw_frame(debug_items, frame_name, T_wrt_world):
     """
     Draws a frame in the world
 
     Args:
-        client: pybullet client
         debug_items: dictionary representing debug items
         frame_name (str): Specifies the name/ID of the frame to create/update
         T_wrt_world (np.array): 4x4 transformation matrix that specified the frame wrt the world frame
@@ -60,29 +59,28 @@ def draw_frame(client, debug_items, frame_name, T_wrt_world):
 
     if frame_name not in debug_items.keys():
         debug_items[frame_name] = []
-        debug_items[frame_name].append(client.addUserDebugLine(position, x_axis_end, [1, 0, 0], lineWidth=line_width))
-        debug_items[frame_name].append(client.addUserDebugLine(position, y_axis_end, [0, 1, 0], lineWidth=line_width))
-        debug_items[frame_name].append(client.addUserDebugLine(position, z_axis_end, [0, 0, 1], lineWidth=line_width))
+        debug_items[frame_name].append(p.addUserDebugLine(position, x_axis_end, [1, 0, 0], lineWidth=line_width))
+        debug_items[frame_name].append(p.addUserDebugLine(position, y_axis_end, [0, 1, 0], lineWidth=line_width))
+        debug_items[frame_name].append(p.addUserDebugLine(position, z_axis_end, [0, 0, 1], lineWidth=line_width))
     else:
         # Just update the current axes
         x_line_id = debug_items[frame_name][0]
         y_line_id = debug_items[frame_name][1]
         z_line_id = debug_items[frame_name][2]
-        debug_items[frame_name][0] = client.addUserDebugLine(position, x_axis_end, [1, 0, 0], replaceItemUniqueId=x_line_id, lineWidth=line_width)
-        debug_items[frame_name][1] = client.addUserDebugLine(position, y_axis_end, [0, 1, 0], replaceItemUniqueId=y_line_id, lineWidth=line_width)
-        debug_items[frame_name][2] = client.addUserDebugLine(position, z_axis_end, [0, 0, 1], replaceItemUniqueId=z_line_id, lineWidth=line_width)
+        debug_items[frame_name][0] = p.addUserDebugLine(position, x_axis_end, [1, 0, 0], replaceItemUniqueId=x_line_id, lineWidth=line_width)
+        debug_items[frame_name][1] = p.addUserDebugLine(position, y_axis_end, [0, 1, 0], replaceItemUniqueId=y_line_id, lineWidth=line_width)
+        debug_items[frame_name][2] = p.addUserDebugLine(position, z_axis_end, [0, 0, 1], replaceItemUniqueId=z_line_id, lineWidth=line_width)
 
 
-def remove_all_debug_items(client, debug_items):
+def remove_all_debug_items(debug_items):
     """ Removes all debug frames and boxes
 
     Args:
-        client: pybullet client
         debug_items: dictionary representing debug items
     """
     for key in debug_items.keys():
         while len(debug_items[key]) > 0:
-            client.removeUserDebugItem(debug_items[0])
+            p.removeUserDebugItem(debug_items[0])
             debug_items.pop(0)
 
 
@@ -118,10 +116,12 @@ def make_so3_nonstupid(q) -> SO3:
     nq /= np.linalg.norm(nq)
     return SO3(nq)
 
+
 def wxyz_to_xyzw(q):
     q_new = np.roll(q, -1)
-    return q_new/np.linalg.norm(q_new)
+    return q_new / np.linalg.norm(q_new)
+
 
 def xyzw_too_wxyz(q):
     q_new = np.roll(q, 1)
-    return q_new/np.linalg.norm(q_new)
+    return q_new / np.linalg.norm(q_new)

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from manifpy import SO3, SO3Tangent, SE3, SE3Tangent
 from numpy.typing import NDArray
-from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_to_xyzw
+from utils import ang_vel_wedge, forward_kinematics, make_so3_nonstupid, wxyz_to_xyzw, R_to_q
 
 class EKF:
     # from (our head)
@@ -33,7 +33,7 @@ class EKF:
 
         self.g = np.array([0, 0, -9.81])
 
-        self.VC_to_Body = np.eye(4)
+        self.VC_to_head = SE3.Identity()
 
         # initialize previous time steps for computing derivatives
         self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.N)]).T
@@ -41,8 +41,8 @@ class EKF:
         self.W_prev = np.array([SO3(self.forward_kinematics(i, self.thetas).quat()) for i in range(self.N)])
         
     
-    def set_VC_Transform(self, VC_to_Head_in):
-        self.VC_to_Head = VC_to_Head_in
+    def set_VC_Transform(self, VC_to_head_in):
+        self.VC_to_head = SE3(position=VC_to_head_in[:3, 3], quaternion=R_to_q(VC_to_head_in[:3, :3]))
 
     def process_model(self, dt: float):
         '''Update the the state to be state_pred.
@@ -153,7 +153,7 @@ class EKF:
         for i in range(self.N + 1):
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
-            R_body_to_head = self.VC_to_Head[:3, :3]
+            R_body_to_head = self.VC_to_head.rotation()
             link_to_body = R_body_to_head.T @ R_link_to_head
 
             daccel_da = link_to_body.T @ SO3(wxyz_to_xyzw(self.state.q)).transform().T
@@ -223,16 +223,17 @@ class EKF:
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
             p_link_to_head = link_to_head.translation()
-            R_body_to_head = self.VC_to_Head[:3, :3]
+            R_body_to_head = self.VC_to_head.rotation()
             link_to_body = R_body_to_head.T @ R_link_to_head
 
-            body_to_world = SO3(wxyz_to_xyzw(self.state.q)).transform()
+            body_to_world = SO3(wxyz_to_xyzw(self.state.q)).rotation()
 
             # predicted acceleration due to internal motion
             link_accel_in_head = (p_link_to_head - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2)
             self.p_prev_prev[:, i] = self.p_prev[:, i]
             self.p_prev[:, i] = p_link_to_head
 
+            # print(link_to_body.T.shape, body_to_world.T.shape, self.state.a.shape, R_body_to_head.T.shape, link_accel_in_head.shape)
             accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + R_body_to_head.T @ link_accel_in_head 
 
             # predicted acceleration from robot motion
@@ -244,7 +245,7 @@ class EKF:
         for i in range(self.N):
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
-            R_body_to_head = self.VC_to_Head[:3, :3]
+            R_body_to_head = self.VC_to_head.rotation()
             link_to_body = R_body_to_head.T @ R_link_to_head
             
             W = SO3(link_to_body.quat())

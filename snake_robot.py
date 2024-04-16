@@ -30,7 +30,7 @@ class SnakeRobot:
         self.T_virtual_chassis_wrt_base = np.eye(4)
         self.T_body_to_world = np.eye(4)
 
-        self.prev_lin_vel = np.zeros((length + 1, 3))
+        self.prev_lin_vel = np.zeros((length + 1, 3, 16))
 
         self.g = np.array([0, 0, -9.81])
 
@@ -70,7 +70,6 @@ class SnakeRobot:
             rgbaColor=[0, 0, 0.670, 1],
         )
 
-        
         link_Masses = []
         linkCollisionShapeIndices = []
         linkVisualShapeIndices = []
@@ -243,10 +242,12 @@ class SnakeRobot:
         lin_vel_world = np.array(lin_vel_world)
         ang_vel_world = np.array(ang_vel_world)
 
-        lin_acc_world = (self.prev_lin_vel[0, :] - lin_vel_world) / dt # TODO
+        lin_acc_world = np.mean(self.prev_lin_vel[0, :, :], axis=1) / dt
         # print("dV", self.prev_lin_vel[0, :] - lin_vel_world)
-        self.prev_lin_vel[0, :] = lin_vel_world
-        lin_acc_world = lin_vel_world
+        np.roll(self.prev_lin_vel, 1, axis=2)
+        self.prev_lin_vel[0, :, 0] = lin_vel_world
+
+        print(lin_acc_world)
 
         # Add gravity vector
         # lin_acc_world += self.g
@@ -260,9 +261,9 @@ class SnakeRobot:
             ang_vel_world += ang_vel_noise
 
         # Convert lin_acc and ang_vel to link frame
-        lin_acc_link =  self.T_body_to_world[:3,:3].T @ lin_acc_world
-        ang_vel_link =  self.T_body_to_world[:3,:3].T @ ang_vel_world
-        print("Velocity in link frame: ", lin_acc_link)
+        lin_acc_link = self.T_body_to_world[:3, :3].T @ lin_acc_world
+        ang_vel_link = self.T_body_to_world[:3, :3].T @ ang_vel_world
+        # print("Velocity in link frame: ", lin_acc_link)
 
         curr_imu_data = np.hstack((lin_acc_link, ang_vel_link))
         imu_data = np.vstack((imu_data, curr_imu_data))
@@ -270,7 +271,7 @@ class SnakeRobot:
         vis_factor = 1
         if debug:
             body_world_position = self.T_body_to_world[:3, 3]
-            draw_line(self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world/vis_factor, [1, 1, 0])
+            draw_line(self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world / vis_factor, [1, 1, 0])
 
         ################ Get the child links ################
         for link_idx in range(num_child_links):
@@ -280,9 +281,8 @@ class SnakeRobot:
             ang_vel_world = np.array(ang_vel_world)
 
             # Calculate internal acceleration in world frame
-            lin_acc_world = (self.prev_lin_vel[link_idx + 1, :] - lin_vel_world) / dt # TODO
-            self.prev_lin_vel[link_idx + 1, :] = lin_vel_world
-            lin_acc_world = lin_vel_world
+            lin_acc_world = np.mean(self.prev_lin_vel[link_idx + 1, :, :], axis=1) / dt
+            self.prev_lin_vel[link_idx + 1, :, 0] = lin_vel_world
 
             # Add gravity vector
             # lin_acc_world += self.g
@@ -290,13 +290,13 @@ class SnakeRobot:
             # Convert lin_acc and ang_vel to link frame
             link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
             R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
-            lin_acc_link =  R_link_to_world.T @ lin_acc_world
+            lin_acc_link = R_link_to_world.T @ lin_acc_world
 
-            ang_vel_link =  R_link_to_world.T @ ang_vel_world
-            
+            ang_vel_link = R_link_to_world.T @ ang_vel_world
+
             if debug:
                 # print(lin_acc_world)
-                draw_line(self.debug_items, f"{link_idx}_imu_accel", link_pos_world, link_pos_world + lin_acc_world/vis_factor, [1, 1, 0])
+                draw_line(self.debug_items, f"{link_idx}_imu_accel", link_pos_world, link_pos_world + lin_acc_world / vis_factor, [1, 1, 0])
 
             if add_noise:
                 lin_acc_std_dev = 0

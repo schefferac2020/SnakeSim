@@ -18,13 +18,12 @@ def run():
     p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     p.setGravity(0, 0, -10)
-    p.setRealTimeSimulation(1)
+    # p.setRealTimeSimulation(1)
     p.setTimeStep(dt)
 
-
     # Make the terrain
-    terrain = Terrain()
-    # p.loadURDF("plane.urdf")
+    # terrain = Terrain()
+    p.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8  # links other than the red head
@@ -34,7 +33,7 @@ def run():
     ekf = EKF(N, link_length)
     ekf.state.w = np.array([0, 0.5, 0])
 
-    pf = TerrainParticleFilter(N, 100, terrain)
+    # pf = TerrainParticleFilter(N, 100, terrain)
 
     forward_cmd = 0
     turn_cmd = 0
@@ -93,7 +92,7 @@ def run():
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
-        pf.prediction(orientation, twist)
+        # pf.prediction(orientation, twist)
 
         # TODO: make this a snake function
         contact_normals = []
@@ -106,14 +105,13 @@ def run():
                 if a_id == 0:
                     contact_normals.append((b_id, contact_normal_on_b))
 
-        pf.correction(contact_normals)
+        # pf.correction(contact_normals)
 
-        doink = pf.filter()
-        print(doink)
+        # doink = pf.filter()
+        # print(doink)
 
         # time.sleep(dt)
         t_sim += dt
-        print(t_sim)
 
     p.disconnect()
 

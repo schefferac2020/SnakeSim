@@ -90,13 +90,10 @@ def run():
 
         # Get Measurements
         encoders = snake.get_joint_angles()
-        [accelerometers, gyros, velocites] = snake.get_imu_data(dt, debug=True)
+        accelerometers, gyros, velocities = snake.get_imu_data(dt, debug=True)
         accel_data.append(accelerometers)
         gyro_data.append(gyros)
-        vel_data.append(velocites)
-
-        # print(accelerometers)
-        # print(gyros)
+        vel_data.append(velocities)
 
         # Update Step of EKF
         # ekf.update(encoders, accelerometers, gyros, dt)
@@ -127,7 +124,7 @@ def run():
         # print(t_sim)
 
     accel_data = np.array(accel_data)
-    ts = np.arange(0, accel_data.shape[0] * dt, dt)
+    ts = np.linspace(0, t_sim, accel_data.shape[0])
     plot_accel(ts, accel_data)
     
     gyro_data = np.array(gyro_data)

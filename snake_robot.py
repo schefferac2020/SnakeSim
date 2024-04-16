@@ -251,35 +251,6 @@ class SnakeRobot:
         link_to_worlds.append(self.T_body_to_world[:3, :3])
         link_positions.append(self.T_body_to_world[:3, 3])
 
-        # lin_acc_world = np.mean(self.prev_lin_vel[0, :, :], axis=1) / dt
-        # np.roll(self.prev_lin_vel, 1, axis=2)
-        # self.prev_lin_vel[0, :, 0] = lin_vel_world
-
-        # print(lin_acc_world)
-
-        # Add gravity vector
-        # lin_acc_world += self.g
-
-        # if add_noise:
-        #     lin_acc_std_dev = 0
-        #     ang_vel_std_dev = 0
-        #     lin_acc_noise = np.random.normal(0, lin_acc_std_dev, size=3)
-        #     ang_vel_noise = np.random.normal(0, ang_vel_std_dev, size=3)
-        #     lin_acc_world += lin_acc_noise
-        #     ang_vel_world += ang_vel_noise
-
-        # Convert lin_acc and ang_vel to link frame
-        # lin_acc_link = self.T_body_to_world[:3, :3].T @ lin_acc_world
-        # ang_vel_link = self.T_body_to_world[:3, :3].T @ ang_vel_world
-
-        # curr_imu_data = np.hstack((lin_acc_link, ang_vel_link))
-        # imu_data = np.vstack((imu_data, curr_imu_data))
-
-        # vis_factor = 1
-        # if debug:
-        #     body_world_position = self.T_body_to_world[:3, 3]
-        #     draw_line(self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world / vis_factor, [1, 1, 0])
-
         ################ Get the child links ################
         for link_idx in range(num_child_links):
             link_state = p.getLinkState(self._snakeID, 1 + 2 * link_idx, computeLinkVelocity=True)
@@ -294,8 +265,7 @@ class SnakeRobot:
             link_to_worlds.append(R_link_to_world)
             link_positions.append(link_pos_world)
 
-        # lin_vels = np.array(lin_vels)
-        # ang_vels = np.array(ang_vels)
+        
         np.roll(self.prev_lin_vel, 1, axis=2)
         for link_idx in range(self.n_links):
             # Calculate internal acceleration in world frame
@@ -329,8 +299,7 @@ class SnakeRobot:
 
         accel = imu_data[:, 0:3].reshape(-1)
         gyro = imu_data[:, 3:6].reshape(-1)
-        vel = self.prev_lin_vel[:, :, 0].reshape(-1)
-        # print(accel)
+        vel = np.copy(self.prev_lin_vel[:, :, 0].reshape(-1))
         return accel, gyro, vel
 
     def update_virtual_chassis_frame(self, debug=True):

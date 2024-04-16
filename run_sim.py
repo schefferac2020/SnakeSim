@@ -3,6 +3,7 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 import matplotlib.pyplot as plt
+from dataclasses import replace
 from manifpy import SE3Tangent
 
 from ekf import EKF
@@ -34,7 +35,8 @@ def run():
     controller = SnakeController(N)
 
     ekf = EKF(N, link_length)
-    ekf.state.w = np.array([0.0, 0., 0.0])
+    ekf.state.w = np.array([0.0, 0.5, 0.0])
+    ekf.state.a = np.array([0.0, 0.0, 0.5])
 
     # Initialize q to be the start q of snake virtual chasis
     snake.update_virtual_chassis_frame()
@@ -54,6 +56,9 @@ def run():
     vel_data = []
     cmd_angle_data = []
     enc_data = []
+    ekf_a_data = []
+    ekf_w_data = []
+    ekf_q_data = []
 
     # Simulate
     t_sim = 0
@@ -100,6 +105,9 @@ def run():
 
         # Update Step of EKF
         # ekf.update(encoders, accelerometers, gyros, dt)
+        ekf_a_data.append(np.copy(ekf.state.a))
+        ekf_w_data.append(np.copy(ekf.state.w))
+        ekf_q_data.append(np.copy(ekf.state.q))
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
@@ -139,6 +147,12 @@ def run():
     enc_data = np.array(enc_data)
     cmd_angle_data = np.array(cmd_angle_data)
     plot_joint_angles(ts, cmd_angle_data, enc_data, np.arange(N))
+
+    ekf_a_data = np.array(ekf_a_data)
+    ekf_w_data = np.array(ekf_w_data)
+    ekf_q_data = np.array(ekf_q_data)
+    plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
+    plt.show()
     
     p.disconnect()
 

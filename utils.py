@@ -155,7 +155,7 @@ def plot_accel(ts, accel_data, link_ids):
     ax[2].set_ylabel("m/s^2")
     ax[2].set_xlabel("Time (s)")
     ax[2].legend()
-    plt.show()
+    # plt.show()
 
 def plot_gyro(ts, gyro_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
@@ -182,7 +182,7 @@ def plot_gyro(ts, gyro_data, link_ids):
     ax[2].set_ylabel("rad/s")
     ax[2].set_xlabel("Time (s)")
     ax[2].legend()
-    plt.show()
+    # plt.show()
     
 def plot_vel(ts, vel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
@@ -209,7 +209,7 @@ def plot_vel(ts, vel_data, link_ids):
     ax[2].set_ylabel("m/s")
     ax[2].set_xlabel("Time (s)")
     ax[2].legend()
-    plt.show()
+    # plt.show()
 
 def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
     fig, ax = plt.subplots(len(joint_ids), 1, sharex=True)
@@ -221,4 +221,61 @@ def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
         ax[i].set_ylabel("rad")
         ax[i].legend()
     ax[-1].set_xlabel("Time (s)")
-    plt.show()
+    # plt.show()
+
+def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
+    
+    # plot acceleration
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(t1, ekf_a_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Accel X")
+    ax[0].set_ylabel("m/s^2")
+
+    ax[1].plot(t1, ekf_a_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Accel Y")
+    ax[1].set_ylabel("m/s^2")
+    
+    ax[2].plot(t1, ekf_a_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Accel Z")
+    ax[2].set_ylabel("m/s^2")
+    ax[2].set_xlabel("Time (s)")
+    # plt.show()
+
+    # plot angular velocity
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(t1, ekf_w_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Gyro X")
+    ax[0].set_ylabel("rad/s")
+    
+    ax[1].plot(t1, ekf_w_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Gyro Y")
+    ax[1].set_ylabel("rad/s")
+    
+    ax[2].plot(t1, ekf_w_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Gyro Z")
+    ax[2].set_ylabel("rad/s")
+    
+    # plot quaternion
+    fig, ax = plt.subplots(4, 1, sharex=True)
+    ax[0].plot(t1, ekf_q_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Quaternion W")
+    
+    ax[1].plot(t1, ekf_q_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Quaternion X")
+    
+    ax[2].plot(t1, ekf_q_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Quaternion Y")
+    
+    ax[3].plot(t1, ekf_q_data[:, 3])
+    ax[3].grid(True)
+    ax[3].set_title("Quaternion Z")
+    ax[3].set_xlabel("Time (s)")

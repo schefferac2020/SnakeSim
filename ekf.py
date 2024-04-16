@@ -62,7 +62,7 @@ class EKF:
             q_pred = self.state.q
 
         w_pred = self.state.w # Constant angular velocity model
-        a_pred = np.exp(self.tau*dt)*self.state.a
+        a_pred = np.exp(-self.tau*dt)*self.state.a
 
         #Update state
         self.state.q = q_pred

@@ -1,5 +1,6 @@
 import numpy as np
 import pybullet as p
+import matplotlib.pyplot as plt
 from manifpy import SE3, SE3Tangent, SO3
 from numpy.typing import NDArray
 
@@ -128,3 +129,66 @@ def wxyz_to_xyzw(q):
 def xyzw_too_wxyz(q):
     q_new = np.roll(q, 1)
     return q_new / np.linalg.norm(q_new)
+
+def plot_accel(ts, accel_data):
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(ts, accel_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Accelerometer X")
+    ax[0].set_ylabel("m/s^2")
+    ax[0].set_xlabel("Time (s)")
+    
+    ax[1].plot(ts, accel_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Accelerometer Y")
+    ax[1].set_ylabel("m/s^2")
+    ax[1].set_xlabel("Time (s)")
+    
+    ax[2].plot(ts, accel_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Accelerometer Z")
+    ax[2].set_ylabel("m/s^2")
+    ax[2].set_xlabel("Time (s)")
+    plt.show()
+
+def plot_gyro(ts, gyro_data):
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(ts, gyro_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Gyroscope X")
+    ax[0].set_ylabel("rad/s")
+    ax[0].set_xlabel("Time (s)")
+    
+    ax[1].plot(ts, gyro_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Gyroscope Y")
+    ax[1].set_ylabel("rad/s")
+    ax[1].set_xlabel("Time (s)")
+    
+    ax[2].plot(ts, gyro_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Gyroscope Z")
+    ax[2].set_ylabel("rad/s")
+    ax[2].set_xlabel("Time (s)")
+    plt.show()
+    
+def plot_vel(ts, vel_data):
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(ts, vel_data[:, 0])
+    ax[0].grid(True)
+    ax[0].set_title("Velocity X")
+    ax[0].set_ylabel("m/s")
+    ax[0].set_xlabel("Time (s)")
+    
+    ax[1].plot(ts, vel_data[:, 1])
+    ax[1].grid(True)
+    ax[1].set_title("Velocity Y")
+    ax[1].set_ylabel("m/s")
+    ax[1].set_xlabel("Time (s)")
+    
+    ax[2].plot(ts, vel_data[:, 2])
+    ax[2].grid(True)
+    ax[2].set_title("Velocity Z")
+    ax[2].set_ylabel("m/s")
+    ax[2].set_xlabel("Time (s)")
+    plt.show()

@@ -1,6 +1,8 @@
+import time
 import numpy as np
 import pybullet as p
 import pybullet_data
+import matplotlib.pyplot as plt
 from manifpy import SE3Tangent
 
 from ekf import EKF
@@ -8,7 +10,7 @@ from particle_filter import TerrainParticleFilter
 from snake_controller import SnakeController
 from snake_robot import SnakeRobot
 from terrain import Terrain
-from utils import draw_frame, to_SE3, make_so3_nonstupid, R_to_q
+from utils import draw_frame, to_SE3, make_so3_nonstupid, R_to_q, plot_accel, plot_gyro, plot_vel
 
 
 def run():
@@ -36,7 +38,7 @@ def run():
 
     # Initialize q to be the start q of snake virtual chasis
     snake.update_virtual_chassis_frame()
-    T_virtual_chassis_wrt_world = snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base
+    T_virtual_chassis_wrt_world = snake.T_body_to_world @ snake.T_VC_to_head
     q_virutal_wrt_world = R_to_q(T_virtual_chassis_wrt_world[:3,:3])
     ekf.state.q = np.array(q_virutal_wrt_world)
 
@@ -46,14 +48,18 @@ def run():
     forward_cmd = 0
     turn_cmd = 0
 
+    # data for plotting
+    accel_data = []
+    gyro_data = []
+    vel_data = []
+    enc_data = []
+
     # Simulate
     t_sim = 0
     while p.isConnected():
-
         p.stepSimulation()
         snake.update_virtual_chassis_frame()
-
-        snake.check_fwd_kinematics()
+        # snake.check_fwd_kinematics()
 
         keys = p.getKeyboardEvents()
         for k, v in keys.items():
@@ -71,28 +77,26 @@ def run():
 
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
-        # angles = controller.inchworm_s_gait(t_sim, 10*forward_cmd, 0.5)
-
         # angles = [0, 0.5]* 8
         snake.set_motors(angles)
 
         # Prediction step of the EKF
-        ekf.set_VC_Transform(snake.T_virtual_chassis_wrt_base)
-
+        ekf.set_VC_Transform(snake.T_VC_to_head)
         ekf.predict(dt)
 
-        VC_pos = (snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base)[0:3, 3]
+        VC_pos = (snake.T_body_to_world @ snake.T_VC_to_head)[0:3, 3]
         ekf_transform = to_SE3(np.array(VC_pos), ekf.state.q)
         draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
-        # Get Measuremnts
+        # Get Measurements
         encoders = snake.get_joint_angles()
-        # print(encoders)
-        [accelerometers, gyros] = snake.get_imu_data(dt, debug=True)
+        [accelerometers, gyros, velocites] = snake.get_imu_data(dt, debug=True)
+        accel_data.append(accelerometers)
+        gyro_data.append(gyros)
+        vel_data.append(velocites)
 
         # print(accelerometers)
         # print(gyros)
-        # print(snake.get_imu_data())
 
         # Update Step of EKF
         # ekf.update(encoders, accelerometers, gyros, dt)
@@ -118,9 +122,20 @@ def run():
         # doink = pf.filter()
         # print(doink)
 
-        # time.sleep(dt)
+        time.sleep(dt)
         t_sim += dt
+        # print(t_sim)
 
+    accel_data = np.array(accel_data)
+    ts = np.arange(0, accel_data.shape[0] * dt, dt)
+    plot_accel(ts, accel_data)
+    
+    gyro_data = np.array(gyro_data)
+    plot_gyro(ts, gyro_data)
+    
+    vel_data = np.array(vel_data)
+    plot_vel(ts, vel_data)
+    
     p.disconnect()
 
 

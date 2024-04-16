@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from manifpy import SE3, SO3, SE3Tangent
 from numpy.typing import NDArray
+from typing import List, Tuple
 
 from terrain import Terrain
 
@@ -41,7 +42,7 @@ class TerrainParticleFilter:
             sample_twist = commanded_twist + perturbation
             particle.head_link = particle.head_link + sample_twist
 
-    def correction(self, joint_contact_normals_in_world: list[tuple[int, NDArray]]):
+    def correction(self, joint_contact_normals_in_world: List[Tuple[int, NDArray]]):
         for link, normal in joint_contact_normals_in_world:
             for particle in self.particles:
                 particle.weight *= self.likelihood(particle, link, normal)

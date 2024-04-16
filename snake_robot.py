@@ -14,7 +14,8 @@ class SnakeRobot:
             base_orientation (list): Start orientation of the snake
             mode (str, optional): Joint interface mode (["position", "torque", "velocity"]). Defaults to "position".
         """
-        self._length = length
+        self.n_joints = length
+        self.n_links = length + 1
         self._mode = mode
 
         self.link_mass = 1
@@ -27,10 +28,10 @@ class SnakeRobot:
 
         # Virtual chassis
         self.prev_V = None
-        self.T_virtual_chassis_wrt_base = np.eye(4)
+        self.T_VC_to_head = np.eye(4)
         self.T_body_to_world = np.eye(4)
 
-        self.prev_lin_vel = np.zeros((length + 1, 3, 16))
+        self.prev_lin_vel = np.zeros((length + 1, 3, 1))
 
         self.g = np.array([0, 0, -9.81])
 
@@ -82,7 +83,7 @@ class SnakeRobot:
         axis = []
 
         ind = 0
-        for i in range(self._length):
+        for i in range(self.n_joints):
             # 1. We first connect a revolute link to the edge of the last box (with an embedded revolute joint)
             link_Masses.append(0.000)
             linkCollisionShapeIndices.append(jointBoxId)
@@ -183,7 +184,7 @@ class SnakeRobot:
 
     def check_fwd_kinematics(self):
         joint_angles = self.get_joint_angles()
-        num_total_links = self._length + 1
+        num_total_links = self.n_joints + 1
         for i in range(num_total_links):
             T_link_wrt_body = forward_kinematics(i, self.link_length, joint_angles).transform()
 
@@ -233,45 +234,51 @@ class SnakeRobot:
         Returns:
             list: Nx6 numpy array where each row is [[lin_acc], [ang_vel]] 
         """
-        num_child_links = self._length
+        num_child_links = self.n_joints
 
         imu_data = np.empty((0, 6))
+        lin_vels = []
+        ang_vels = []
+        link_to_worlds = []
+        link_positions = []
 
         ################ Get the base link ################
         lin_vel_world, ang_vel_world = p.getBaseVelocity(self._snakeID)
         lin_vel_world = np.array(lin_vel_world)
         ang_vel_world = np.array(ang_vel_world)
+        lin_vels.append(lin_vel_world)
+        ang_vels.append(ang_vel_world)
+        link_to_worlds.append(self.T_body_to_world[:3, :3])
+        link_positions.append(self.T_body_to_world[:3, 3])
 
-        lin_acc_world = np.mean(self.prev_lin_vel[0, :, :], axis=1) / dt
-        # print("dV", self.prev_lin_vel[0, :] - lin_vel_world)
-        np.roll(self.prev_lin_vel, 1, axis=2)
-        self.prev_lin_vel[0, :, 0] = lin_vel_world
+        # lin_acc_world = np.mean(self.prev_lin_vel[0, :, :], axis=1) / dt
+        # np.roll(self.prev_lin_vel, 1, axis=2)
+        # self.prev_lin_vel[0, :, 0] = lin_vel_world
 
-        print(lin_acc_world)
+        # print(lin_acc_world)
 
         # Add gravity vector
         # lin_acc_world += self.g
 
-        if add_noise:
-            lin_acc_std_dev = 0
-            ang_vel_std_dev = 0
-            lin_acc_noise = np.random.normal(0, lin_acc_std_dev, size=3)
-            ang_vel_noise = np.random.normal(0, ang_vel_std_dev, size=3)
-            lin_acc_world += lin_acc_noise
-            ang_vel_world += ang_vel_noise
+        # if add_noise:
+        #     lin_acc_std_dev = 0
+        #     ang_vel_std_dev = 0
+        #     lin_acc_noise = np.random.normal(0, lin_acc_std_dev, size=3)
+        #     ang_vel_noise = np.random.normal(0, ang_vel_std_dev, size=3)
+        #     lin_acc_world += lin_acc_noise
+        #     ang_vel_world += ang_vel_noise
 
         # Convert lin_acc and ang_vel to link frame
-        lin_acc_link = self.T_body_to_world[:3, :3].T @ lin_acc_world
-        ang_vel_link = self.T_body_to_world[:3, :3].T @ ang_vel_world
-        # print("Velocity in link frame: ", lin_acc_link)
+        # lin_acc_link = self.T_body_to_world[:3, :3].T @ lin_acc_world
+        # ang_vel_link = self.T_body_to_world[:3, :3].T @ ang_vel_world
 
-        curr_imu_data = np.hstack((lin_acc_link, ang_vel_link))
-        imu_data = np.vstack((imu_data, curr_imu_data))
+        # curr_imu_data = np.hstack((lin_acc_link, ang_vel_link))
+        # imu_data = np.vstack((imu_data, curr_imu_data))
 
-        vis_factor = 1
-        if debug:
-            body_world_position = self.T_body_to_world[:3, 3]
-            draw_line(self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world / vis_factor, [1, 1, 0])
+        # vis_factor = 1
+        # if debug:
+        #     body_world_position = self.T_body_to_world[:3, 3]
+        #     draw_line(self.debug_items, "head_imu_accel", body_world_position, body_world_position + lin_acc_world / vis_factor, [1, 1, 0])
 
         ################ Get the child links ################
         for link_idx in range(num_child_links):
@@ -279,24 +286,35 @@ class SnakeRobot:
             lin_vel_world, ang_vel_world = link_state[6:8]
             lin_vel_world = np.array(lin_vel_world)
             ang_vel_world = np.array(ang_vel_world)
+            lin_vels.append(lin_vel_world)
+            ang_vels.append(ang_vel_world)
 
+            link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
+            R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
+            link_to_worlds.append(R_link_to_world)
+            link_positions.append(link_pos_world)
+
+        # lin_vels = np.array(lin_vels)
+        # ang_vels = np.array(ang_vels)
+        np.roll(self.prev_lin_vel, 1, axis=2)
+        for link_idx in range(self.n_links):
             # Calculate internal acceleration in world frame
-            lin_acc_world = np.mean(self.prev_lin_vel[link_idx + 1, :, :], axis=1) / dt
-            self.prev_lin_vel[link_idx + 1, :, 0] = lin_vel_world
+            self.prev_lin_vel[link_idx, :, 0] = lin_vels[link_idx]
+            lin_acc_world = np.mean(self.prev_lin_vel[link_idx, :, :], axis=1) / dt
 
             # Add gravity vector
             # lin_acc_world += self.g
 
             # Convert lin_acc and ang_vel to link frame
-            link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
-            R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
-            lin_acc_link = R_link_to_world.T @ lin_acc_world
-
-            ang_vel_link = R_link_to_world.T @ ang_vel_world
+            # link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
+            # R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
+            lin_acc_link = link_to_worlds[link_idx].T @ lin_acc_world
+            ang_vel_link = link_to_worlds[link_idx].T @ ang_vels[link_idx]
 
             if debug:
+                vis_factor = 1
                 # print(lin_acc_world)
-                draw_line(self.debug_items, f"{link_idx}_imu_accel", link_pos_world, link_pos_world + lin_acc_world / vis_factor, [1, 1, 0])
+                draw_line(self.debug_items, f"{link_idx}_imu_accel", link_positions[link_idx], link_positions[link_idx] + lin_acc_world / vis_factor, [1, 1, 0])
 
             if add_noise:
                 lin_acc_std_dev = 0
@@ -311,7 +329,9 @@ class SnakeRobot:
 
         accel = imu_data[:, 0:3].reshape(-1)
         gyro = imu_data[:, 3:6].reshape(-1)
-        return accel, gyro
+        vel = self.prev_lin_vel[:, :, 0].reshape(-1)
+        # print(accel)
+        return accel, gyro, vel
 
     def update_virtual_chassis_frame(self, debug=True):
         """ Updates the position of the virtual chassis with respect to the body frame (self.T_virtual_chassis_wrt_base)
@@ -329,7 +349,7 @@ class SnakeRobot:
         # STEP 1: calculate geometric center of mass (IN THE INITIAL FRAME)
         link_positions = np.zeros((1, 3))
 
-        num_child_links = self._length
+        num_child_links = self.n_joints
         for link_idx in range(num_child_links):
             # Get the link state (position and orientation) relative to the base link
             link_state = p.getLinkState(self._snakeID, 2 * link_idx, computeLinkVelocity=False, computeForwardKinematics=True)
@@ -362,12 +382,12 @@ class SnakeRobot:
         V[:, 2] = cross_product
 
         # Update virtual chassis transformation
-        self.T_virtual_chassis_wrt_base = np.eye(4)
-        self.T_virtual_chassis_wrt_base[:3, :3] = V
-        self.T_virtual_chassis_wrt_base[:3, 3] = center_of_mass_wrt_base
+        self.T_VC_to_head = np.eye(4)
+        self.T_VC_to_head[:3, :3] = V
+        self.T_VC_to_head[:3, 3] = center_of_mass_wrt_base
 
         self.prev_V = V
 
         if debug:
-            T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_virtual_chassis_wrt_base
+            T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_VC_to_head
             draw_frame(self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)

@@ -31,7 +31,7 @@ class SnakeRobot:
         self.T_VC_to_head = np.eye(4)
         self.T_body_to_world = np.eye(4)
 
-        self.prev_lin_vel = np.zeros((length + 1, 3, 1))
+        self.prev_lin_vel = np.zeros((length + 1, 3, 3))
 
         self.g = np.array([0, 0, -9.81])
 
@@ -270,7 +270,7 @@ class SnakeRobot:
         for link_idx in range(self.n_links):
             # Calculate internal acceleration in world frame
             self.prev_lin_vel[link_idx, :, 0] = lin_vels[link_idx]
-            lin_acc_world = np.mean(self.prev_lin_vel[link_idx, :, :], axis=1) / dt
+            lin_acc_world = np.mean(self.prev_lin_vel[link_idx, :, :], axis=1) / dt / 100
 
             # Add gravity vector
             # lin_acc_world += self.g

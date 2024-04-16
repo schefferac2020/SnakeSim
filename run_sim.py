@@ -10,7 +10,7 @@ from particle_filter import TerrainParticleFilter
 from snake_controller import SnakeController
 from snake_robot import SnakeRobot
 from terrain import Terrain
-from utils import draw_frame, to_SE3, make_so3_nonstupid, R_to_q, plot_accel, plot_gyro, plot_vel
+from utils import *
 
 
 def run():
@@ -52,6 +52,7 @@ def run():
     accel_data = []
     gyro_data = []
     vel_data = []
+    cmd_angle_data = []
     enc_data = []
 
     # Simulate
@@ -79,6 +80,7 @@ def run():
         angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
         # angles = [0, 0.5]* 8
         snake.set_motors(angles)
+        cmd_angle_data.append(angles)
 
         # Prediction step of the EKF
         ekf.set_VC_Transform(snake.T_VC_to_head)
@@ -94,6 +96,7 @@ def run():
         accel_data.append(accelerometers)
         gyro_data.append(gyros)
         vel_data.append(velocities)
+        enc_data.append(encoders)
 
         # Update Step of EKF
         # ekf.update(encoders, accelerometers, gyros, dt)
@@ -125,13 +128,17 @@ def run():
 
     accel_data = np.array(accel_data)
     ts = np.linspace(0, t_sim, accel_data.shape[0])
-    plot_accel(ts, accel_data)
+    plot_accel(ts, accel_data, np.arange(N + 1))
     
     gyro_data = np.array(gyro_data)
-    plot_gyro(ts, gyro_data)
+    plot_gyro(ts, gyro_data, np.arange(N + 1))
     
     vel_data = np.array(vel_data)
-    plot_vel(ts, vel_data)
+    plot_vel(ts, vel_data, np.arange(N + 1))
+    
+    enc_data = np.array(enc_data)
+    cmd_angle_data = np.array(cmd_angle_data)
+    plot_joint_angles(ts, cmd_angle_data, enc_data, np.arange(N))
     
     p.disconnect()
 

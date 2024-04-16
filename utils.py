@@ -130,65 +130,95 @@ def xyzw_too_wxyz(q):
     q_new = np.roll(q, 1)
     return q_new / np.linalg.norm(q_new)
 
-def plot_accel(ts, accel_data):
+def plot_accel(ts, accel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
-    ax[0].plot(ts, accel_data[:, 0])
+    for i in link_ids:
+        ax[0].plot(ts, accel_data[:, i*3], label=f"Link {i+1}")
     ax[0].grid(True)
-    ax[0].set_title("Accelerometer X")
+    ax[0].set_title("Accel X")
     ax[0].set_ylabel("m/s^2")
     ax[0].set_xlabel("Time (s)")
+    ax[0].legend()
     
-    ax[1].plot(ts, accel_data[:, 1])
+    for i in link_ids:
+        ax[1].plot(ts, accel_data[:, i*3 + 1], label=f"Link {i+1}")
     ax[1].grid(True)
-    ax[1].set_title("Accelerometer Y")
+    ax[1].set_title("Accel Y")
     ax[1].set_ylabel("m/s^2")
     ax[1].set_xlabel("Time (s)")
+    ax[1].legend()
     
-    ax[2].plot(ts, accel_data[:, 2])
+    for i in link_ids:
+        ax[2].plot(ts, accel_data[:, i*3 + 2], label=f"Link {i+1}")
     ax[2].grid(True)
-    ax[2].set_title("Accelerometer Z")
+    ax[2].set_title("Accel Z")
     ax[2].set_ylabel("m/s^2")
     ax[2].set_xlabel("Time (s)")
+    ax[2].legend()
     plt.show()
 
-def plot_gyro(ts, gyro_data):
+def plot_gyro(ts, gyro_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
-    ax[0].plot(ts, gyro_data[:, 0])
+    for i in link_ids:
+        ax[0].plot(ts, gyro_data[:, i*3], label=f"Link {i+1}")
     ax[0].grid(True)
-    ax[0].set_title("Gyroscope X")
+    ax[0].set_title("Gyro X")
     ax[0].set_ylabel("rad/s")
     ax[0].set_xlabel("Time (s)")
+    ax[0].legend()
     
-    ax[1].plot(ts, gyro_data[:, 1])
+    for i in link_ids:
+        ax[1].plot(ts, gyro_data[:, i*3 + 1], label=f"Link {i+1}")
     ax[1].grid(True)
-    ax[1].set_title("Gyroscope Y")
+    ax[1].set_title("Gyro Y")
     ax[1].set_ylabel("rad/s")
     ax[1].set_xlabel("Time (s)")
+    ax[1].legend()
     
-    ax[2].plot(ts, gyro_data[:, 2])
+    for i in link_ids:
+        ax[2].plot(ts, gyro_data[:, i*3 + 2], label=f"Link {i+1}")
     ax[2].grid(True)
-    ax[2].set_title("Gyroscope Z")
+    ax[2].set_title("Gyro Z")
     ax[2].set_ylabel("rad/s")
     ax[2].set_xlabel("Time (s)")
+    ax[2].legend()
     plt.show()
     
-def plot_vel(ts, vel_data):
+def plot_vel(ts, vel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
-    ax[0].plot(ts, vel_data[:, 0])
+    for i in link_ids:
+        ax[0].plot(ts, vel_data[:, i*3], label=f"Link {i+1}")
     ax[0].grid(True)
     ax[0].set_title("Velocity X")
     ax[0].set_ylabel("m/s")
     ax[0].set_xlabel("Time (s)")
+    ax[0].legend()
     
-    ax[1].plot(ts, vel_data[:, 1])
+    for i in link_ids:
+        ax[1].plot(ts, vel_data[:, i*3 + 1], label=f"Link {i+1}")
     ax[1].grid(True)
     ax[1].set_title("Velocity Y")
     ax[1].set_ylabel("m/s")
     ax[1].set_xlabel("Time (s)")
+    ax[1].legend()
     
-    ax[2].plot(ts, vel_data[:, 2])
+    for i in link_ids:
+        ax[2].plot(ts, vel_data[:, i*3 + 2], label=f"Link {i+1}")
     ax[2].grid(True)
     ax[2].set_title("Velocity Z")
     ax[2].set_ylabel("m/s")
     ax[2].set_xlabel("Time (s)")
+    ax[2].legend()
+    plt.show()
+
+def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
+    fig, ax = plt.subplots(len(joint_ids), 1, sharex=True)
+    for i, joint_id in enumerate(joint_ids):
+        ax[i].plot(ts, cmd_angle_data[:, joint_id], label=f"Commanded Angle")
+        ax[i].plot(ts, enc_data[:, joint_id], label=f"Encoder Angle")
+        ax[i].grid(True)
+        ax[i].set_title(f"Joint {joint_id}")
+        ax[i].set_ylabel("rad")
+        ax[i].legend()
+    ax[-1].set_xlabel("Time (s)")
     plt.show()

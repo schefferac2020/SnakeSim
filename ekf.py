@@ -53,9 +53,14 @@ class EKF:
         '''
         omega = ang_vel_wedge(self.state.w) 
         w_mag = np.linalg.norm(self.state.w)
-        temp = w_mag * dt / 2
 
-        q_pred = (np.cos(temp)*np.eye(4) + (2 / w_mag) * np.sin(temp) * omega) @ self.state.q
+        q_pred = ...
+        if w_mag != 0:
+            temp = w_mag * dt / 2
+            q_pred = (np.cos(temp)*np.eye(4) + (2 / w_mag) * np.sin(temp) * omega) @ self.state.q
+        else:
+            q_pred = self.state.q
+
         w_pred = self.state.w # Constant angular velocity model
         a_pred = np.exp(self.tau*dt)*self.state.a
 
@@ -80,9 +85,17 @@ class EKF:
         t6 = -t5
         t8 = t2+t3+t4
         t7 = np.exp(t6)
-        t9 = 1.0/t8
+
+        t9 = 0
+        if t8 !=0:
+            t9 = 1.0/t8
+
         t10 = np.sqrt(t8)
-        t11 = 1.0/t10
+
+        t11 = 0
+        if t10 != 0:
+            t11 = 1.0/t10
+
         t13 = (dt*t10)/2.0
         t12 = t11**3
         t14 = np.cos(t13)

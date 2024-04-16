@@ -8,17 +8,17 @@ from particle_filter import TerrainParticleFilter
 from snake_controller import SnakeController
 from snake_robot import SnakeRobot
 from terrain import Terrain
-from utils import draw_frame, to_SE3, make_so3_nonstupid
+from utils import draw_frame, to_SE3, make_so3_nonstupid, R_to_q
 
 
 def run():
-    dt = 1. / 60.
+    dt = 1. / 120.
 
     # Setup pybullet client
     p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     p.setGravity(0, 0, -10)
-    # p.setRealTimeSimulation(1)
+    p.setRealTimeSimulation(0)
     p.setTimeStep(dt)
 
     # Make the terrain
@@ -30,8 +30,16 @@ def run():
     link_length = 0.5
     snake = SnakeRobot(N, link_length, [0, 0, 5], [0, 0, 0, 1])
     controller = SnakeController(N)
+
     ekf = EKF(N, link_length)
-    ekf.state.w = np.array([0, 0.5, 0])
+    ekf.state.w = np.array([0.0, 0., 0.0])
+
+    # Initialize q to be the start q of snake virtual chasis
+    snake.update_virtual_chassis_frame()
+    T_virtual_chassis_wrt_world = snake.T_body_to_world @ snake.T_virtual_chassis_wrt_base
+    q_virutal_wrt_world = R_to_q(T_virtual_chassis_wrt_world[:3,:3])
+    ekf.state.q = np.array(q_virutal_wrt_world)
+
 
     # pf = TerrainParticleFilter(N, 100, terrain)
 

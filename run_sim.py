@@ -35,7 +35,7 @@ def run():
     controller = SnakeController(N)
 
     ekf = EKF(N, link_length)
-    ekf.state.w = np.array([0.0, 0.5, 0.0])
+    ekf.state.w = np.array([0.5, 0.0, 0.0])
     ekf.state.a = np.array([0.0, 0.0, 0.5])
 
     # Initialize q to be the start q of snake virtual chasis
@@ -92,7 +92,7 @@ def run():
         ekf.predict(dt)
 
         VC_pos = (snake.T_body_to_world @ snake.T_VC_to_head)[0:3, 3]
-        ekf_transform = to_SE3(np.array(VC_pos), ekf.state.q)
+        ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
         draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Get Measurements

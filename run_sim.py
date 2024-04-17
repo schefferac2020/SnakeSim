@@ -31,16 +31,16 @@ def run():
     # Make the snake
     N = 8  # links other than the red head
     link_length = 0.5
-    snake = SnakeRobot(N, link_length, [0, 0, 5], [0, 0, 0, 1])
+    snake = SnakeRobot(N, link_length, [0, 0, 0.5], [0, 0, 0, 1])
     controller = SnakeController(N)
 
     ekf = EKF(N, link_length)
-    ekf.state.w = np.array([0.5, 0.0, 0.0])
-    ekf.state.a = np.array([0.0, 0.0, 0.5])
+    ekf.state.w = np.array([0.0, 0.0, 0.0])
+    ekf.state.a = np.array([0.0, 0.0, 0.0])
 
     # Initialize q to be the start q of snake virtual chasis
     snake.update_virtual_chassis_frame()
-    T_virtual_chassis_wrt_world = snake.T_body_to_world @ snake.T_VC_to_head
+    T_virtual_chassis_wrt_world = snake.T_head_to_world @ snake.T_VC_to_head
     q_virutal_wrt_world = R_to_q(T_virtual_chassis_wrt_world[:3,:3])
     ekf.state.q = np.array(q_virutal_wrt_world)
 
@@ -67,6 +67,7 @@ def run():
         snake.update_virtual_chassis_frame()
         # snake.check_fwd_kinematics()
 
+        quit = False
         keys = p.getKeyboardEvents()
         for k, v in keys.items():
             if k == p.B3G_UP_ARROW and (v & p.KEY_WAS_TRIGGERED):
@@ -80,6 +81,8 @@ def run():
             if k == p.B3G_SPACE and (v & p.KEY_WAS_TRIGGERED):
                 forward_cmd = 0
                 turn_cmd = 0
+            if k == ord('q') and (v & p.KEY_WAS_TRIGGERED):
+                quit = True
 
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
@@ -91,7 +94,7 @@ def run():
         ekf.set_VC_Transform(snake.T_VC_to_head)
         ekf.predict(dt)
 
-        VC_pos = (snake.T_body_to_world @ snake.T_VC_to_head)[0:3, 3]
+        VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
         ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
         draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
@@ -104,7 +107,7 @@ def run():
         enc_data.append(encoders)
 
         # Update Step of EKF
-        # ekf.update(encoders, accelerometers, gyros, dt)
+        ekf.update(encoders, accelerometers, gyros, dt)
         ekf_a_data.append(np.copy(ekf.state.a))
         ekf_w_data.append(np.copy(ekf.state.w))
         ekf_q_data.append(np.copy(ekf.state.q))
@@ -134,6 +137,9 @@ def run():
         t_sim += dt
         # print(t_sim)
 
+        if quit:
+            p.disconnect()
+
     accel_data = np.array(accel_data)
     ts = np.linspace(0, t_sim, accel_data.shape[0])
     plot_accel(ts, accel_data, np.arange(N + 1))
@@ -154,8 +160,7 @@ def run():
     plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
     plt.show()
     
-    p.disconnect()
-
+    # p.disconnect()
 
 if __name__ == "__main__":
     run()

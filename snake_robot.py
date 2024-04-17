@@ -29,7 +29,7 @@ class SnakeRobot:
         # Virtual chassis
         self.prev_V = None
         self.T_VC_to_head = np.eye(4)
-        self.T_body_to_world = np.eye(4)
+        self.T_head_to_world = np.eye(4)
 
         self.prev_lin_vel = np.zeros((length + 1, 3, 3))
 
@@ -188,7 +188,7 @@ class SnakeRobot:
         for i in range(num_total_links):
             T_link_wrt_body = forward_kinematics(i, self.link_length, joint_angles).transform()
 
-            T_FK_link_wrt_wrld = self.T_body_to_world @ T_link_wrt_body
+            T_FK_link_wrt_wrld = self.T_head_to_world @ T_link_wrt_body
 
             frame_name = f"FK_link_{i}"
             draw_frame(self.debug_items, frame_name, T_FK_link_wrt_wrld)
@@ -248,8 +248,8 @@ class SnakeRobot:
         ang_vel_world = np.array(ang_vel_world)
         lin_vels.append(lin_vel_world)
         ang_vels.append(ang_vel_world)
-        link_to_worlds.append(self.T_body_to_world[:3, :3])
-        link_positions.append(self.T_body_to_world[:3, 3])
+        link_to_worlds.append(self.T_head_to_world[:3, :3])
+        link_positions.append(self.T_head_to_world[:3, 3])
 
         ################ Get the child links ################
         for link_idx in range(num_child_links):
@@ -273,7 +273,7 @@ class SnakeRobot:
             lin_acc_world = np.mean(self.prev_lin_vel[link_idx, :, :], axis=1) / dt / 100
 
             # Add gravity vector
-            # lin_acc_world += self.g
+            lin_acc_world += self.g
 
             # Convert lin_acc and ang_vel to link frame
             # link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
@@ -313,7 +313,7 @@ class SnakeRobot:
 
         # Get the transformation matrix from the body frame --> the world frame
         body_position, body_orientation = p.getBasePositionAndOrientation(self._snakeID)
-        self.T_body_to_world = to_SE3(body_position, body_orientation)
+        self.T_head_to_world = to_SE3(body_position, body_orientation)
 
         # STEP 1: calculate geometric center of mass (IN THE INITIAL FRAME)
         link_positions = np.zeros((1, 3))
@@ -324,7 +324,7 @@ class SnakeRobot:
             link_state = p.getLinkState(self._snakeID, 2 * link_idx, computeLinkVelocity=False, computeForwardKinematics=True)
             link_position_rel_world = np.array([[link_state[0][0], link_state[0][1], link_state[0][2], 1]]).T
 
-            link_position_rel_base = np.linalg.inv(self.T_body_to_world) @ link_position_rel_world
+            link_position_rel_base = np.linalg.inv(self.T_head_to_world) @ link_position_rel_world
 
             link_positions = np.vstack((link_positions, link_position_rel_base.T[:, 0:3]))
 
@@ -358,5 +358,5 @@ class SnakeRobot:
         self.prev_V = V
 
         if debug:
-            T_virtual_chassis_wrt_world = self.T_body_to_world @ self.T_VC_to_head
+            T_virtual_chassis_wrt_world = self.T_head_to_world @ self.T_VC_to_head
             draw_frame(self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)

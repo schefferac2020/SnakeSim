@@ -60,6 +60,7 @@ def run():
     ekf_w_data = []
     ekf_q_data = []
     gt_q_data = []
+    pred_accel_data = []
 
     # Simulate
     t_sim = 0
@@ -89,11 +90,18 @@ def run():
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
         # angles = [0, 0.5]* 8
+        # angles = [0] * 8
+        # angles[1] = min(t_sim, np.pi / 4)
+        # angles[3] = min(t_sim, np.pi / 4)
+        # angles[5] = min(t_sim, np.pi / 4)
+        # print(angles[0])
+        # angles = np.roll(np.array(angles), 1)
         snake.set_motors(angles)
         cmd_angle_data.append(angles)
 
         # Prediction step of the EKF
         ekf.set_VC_Transform(snake.T_VC_to_head)
+        ekf.set_head_to_world_Transform(snake.T_head_to_world)
         ekf.predict(dt)
 
         VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
@@ -115,6 +123,8 @@ def run():
         ekf_w_data.append(np.copy(ekf.state.w))
         ekf_q_data.append(np.copy(ekf.state.q))
         snake.draw_accel_vectors_in_world(ekf.last_predicted_accelerations, [1, 0, 1], "ekf")
+
+        pred_accel_data.append(np.copy(ekf.last_predicted_accelerations))
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
@@ -146,7 +156,11 @@ def run():
 
     accel_data = np.array(accel_data)
     ts = np.linspace(0, t_sim, accel_data.shape[0])
-    plot_accel(ts, accel_data, np.arange(N + 1))
+    plot_accel(ts, accel_data, np.arange(N + 1), fig_name="IMU Accel")
+
+    pred_accel_data = np.array(pred_accel_data)
+    print("The shape of pred_accel_data is", pred_accel_data.shape)
+    plot_accel(ts, pred_accel_data, np.arange(N + 1), fig_name="Predicted Accel")
     
     gyro_data = np.array(gyro_data)
     plot_gyro(ts, gyro_data, np.arange(N + 1))

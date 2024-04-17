@@ -30,6 +30,7 @@ class EKF:
         self.thetas = np.zeros(self.n_joints)
         
         # self.state.q = np.array([[1.0, 0, 0, 0]]).T #qw qx qy qz
+        self.T_head_to_world = np.eye(4)
 
         self.tau = 25 # Acceleration damping
         self.g = np.array([0, 0, -9.81])
@@ -44,6 +45,10 @@ class EKF:
     
     def set_VC_Transform(self, VC_to_head_in):
         self.VC_to_head = SE3(position=VC_to_head_in[:3, 3], quaternion=R_to_q(VC_to_head_in[:3, :3]))
+
+    def set_head_to_world_Transform(self, T_head_to_world_in):
+        '''For debugging only'''
+        self.T_head_to_world = T_head_to_world_in
 
     def process_model(self, dt: float):
         '''Update the the state to be state_pred.
@@ -242,19 +247,30 @@ class EKF:
             # predicted acceleration due to gravity
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
-            p_link_to_head = link_to_head.translation()
-            R_body_to_head = self.VC_to_head.rotation()
-            link_to_body = R_body_to_head.T @ R_link_to_head
+            p_link_in_head = np.vstack((link_to_head.translation().reshape(3,-1), np.array([1])))
 
-            body_to_world = SO3(wxyz_to_xyzw(self.state.q)).rotation()
+            R_body_to_head = self.VC_to_head.rotation()
+            p_body_to_head = np.vstack((self.VC_to_head.translation().reshape(3,-1), np.array([1])))
+            body_to_head = np.eye(4)
+            body_to_head[:3, :3] = R_body_to_head
+            body_to_head[:3, 3] = p_body_to_head[:3, 0]
+
+            p_link_in_body = (np.linalg.inv(body_to_head) @ p_link_in_head)[:3, 0]
+            if i == 0:
+                print(p_link_in_body)
+
+            # body_to_world = SO3(wxyz_to_xyzw(self.state.q)).rotation()
+            body_to_world_q = R_to_q(self.T_head_to_world[:3,:3] @ R_body_to_head)
+            body_to_world = SO3(wxyz_to_xyzw(body_to_world_q)).rotation()
 
             # predicted acceleration due to internal motion
-            link_accel_in_head = (p_link_to_head - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2)
+            link_accel_in_body = (p_link_in_body - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2) / 100
             self.p_prev_prev[:, i] = self.p_prev[:, i]
-            self.p_prev[:, i] = p_link_to_head
+            self.p_prev[:, i] = p_link_in_body
 
             # print(link_to_body.T.shape, body_to_world.T.shape, self.state.a.shape, R_body_to_head.T.shape, link_accel_in_head.shape)
-            accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + R_body_to_head.T @ link_accel_in_head 
+            # accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + R_body_to_head.T @ link_accel_in_head 
+            accel_pred = link_accel_in_body
 
             # predicted acceleration from robot motion
             accel[3*i:3*(i+1)] = accel_pred

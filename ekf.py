@@ -205,27 +205,22 @@ class EKF:
             expr = R_q.diff(q[i])
             self.dR_dq.append(lambdify([q], expr, "numpy"))
         
-
-    # def dR_dq(self, i: int, q_in: NDArray):
-    #     # return np.eye(3)
-
-    #     zippy = list(zip(q, q_in))
-    #     return np.array(result.subs(zippy))
-
-
     def update(self, encoders, accelerations, gyros, dt) -> None:
-        """
-        """
         self.thetas = encoders
 
         predicted_accelerations = self.acceleration_prediction(dt)
         predicted_gyroscope = self.gyroscope_prediction(dt)
+
+        # debug
+        self.last_predicted_accelerations = predicted_accelerations
+        self.last_predicted_gyroscope = predicted_gyroscope
         
         m_vec = np.concatenate([accelerations, gyros])
         pred_vec = np.concatenate([predicted_accelerations, predicted_gyroscope]) 
         H = self.measurement_jacobian()
 
         innovation = m_vec - pred_vec
+        # print(f"innovation: {innovation}")
         S = H @ self.P @ H.T + self.R
         K = self.P @ H.T @ np.linalg.inv(S)
 

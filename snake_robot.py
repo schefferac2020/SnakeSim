@@ -239,8 +239,8 @@ class SnakeRobot:
         imu_data = np.empty((0, 6))
         lin_vels = []
         ang_vels = []
-        link_to_worlds = []
-        link_positions = []
+        self.link_to_worlds = []
+        self.link_positions = []
 
         ################ Get the base link ################
         lin_vel_world, ang_vel_world = p.getBaseVelocity(self._snakeID)
@@ -248,8 +248,8 @@ class SnakeRobot:
         ang_vel_world = np.array(ang_vel_world)
         lin_vels.append(lin_vel_world)
         ang_vels.append(ang_vel_world)
-        link_to_worlds.append(self.T_head_to_world[:3, :3])
-        link_positions.append(self.T_head_to_world[:3, 3])
+        self.link_to_worlds.append(self.T_head_to_world[:3, :3])
+        self.link_positions.append(self.T_head_to_world[:3, 3])
 
         ################ Get the child links ################
         for link_idx in range(num_child_links):
@@ -262,8 +262,8 @@ class SnakeRobot:
 
             link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
             R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
-            link_to_worlds.append(R_link_to_world)
-            link_positions.append(link_pos_world)
+            self.link_to_worlds.append(R_link_to_world)
+            self.link_positions.append(link_pos_world)
 
         
         np.roll(self.prev_lin_vel, 1, axis=2)
@@ -278,13 +278,13 @@ class SnakeRobot:
             # Convert lin_acc and ang_vel to link frame
             # link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))
             # R_link_to_world = to_SE3(link_pos_world, link_orient_world)[0:3, 0:3]
-            lin_acc_link = link_to_worlds[link_idx].T @ lin_acc_world
-            ang_vel_link = link_to_worlds[link_idx].T @ ang_vels[link_idx]
+            lin_acc_link = self.link_to_worlds[link_idx].T @ lin_acc_world
+            ang_vel_link = self.link_to_worlds[link_idx].T @ ang_vels[link_idx]
 
-            if debug:
-                vis_factor = 1
-                # print(lin_acc_world)
-                draw_line(self.debug_items, f"{link_idx}_imu_accel", link_positions[link_idx], link_positions[link_idx] + lin_acc_world / vis_factor, [1, 1, 0])
+            # if debug:
+            #     vis_factor = 5
+            #     # print(lin_acc_world)
+            #     draw_line(self.debug_items, f"{link_idx}_imu_accel", self.link_positions[link_idx], self.link_positions[link_idx] + lin_acc_world / vis_factor, [1, 1, 0])
 
             if add_noise:
                 lin_acc_std_dev = 0
@@ -360,3 +360,9 @@ class SnakeRobot:
         if debug:
             T_virtual_chassis_wrt_world = self.T_head_to_world @ self.T_VC_to_head
             draw_frame(self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
+
+    def draw_accel_vectors_in_world(self, accel_in_links, color: list, label: str):
+        vis_factor = 5
+        for i in range(self.n_links):
+            accel_in_world = self.link_to_worlds[i] @ accel_in_links[3*i:3*(i+1)]
+            draw_line(self.debug_items, f"{i}_accel_{label}", self.link_positions[i], self.link_positions[i] + accel_in_world / vis_factor, color)

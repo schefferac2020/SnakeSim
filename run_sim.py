@@ -103,6 +103,7 @@ def run():
         # Get Measurements
         encoders = snake.get_joint_angles()
         accelerometers, gyros, velocities = snake.get_imu_data(dt, debug=True)
+        snake.draw_accel_vectors_in_world(accelerometers, [1, 1, 0], "imu")
         accel_data.append(accelerometers)
         gyro_data.append(gyros)
         vel_data.append(velocities)
@@ -113,6 +114,7 @@ def run():
         ekf_a_data.append(np.copy(ekf.state.a))
         ekf_w_data.append(np.copy(ekf.state.w))
         ekf_q_data.append(np.copy(ekf.state.q))
+        snake.draw_accel_vectors_in_world(ekf.last_predicted_accelerations, [1, 0, 1], "ekf")
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)

@@ -267,6 +267,7 @@ def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data, gt_q_data):
     ax[0].plot(t1, gt_q_data[:, 0], label="Ground Truth")
     ax[0].grid(True)
     ax[0].set_title("Quaternion W")
+    ax[0].legend()
     
     ax[1].plot(t1, ekf_q_data[:, 1], label="EKF")
     ax[1].plot(t1, gt_q_data[:, 1], label="Ground Truth")

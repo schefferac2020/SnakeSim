@@ -32,10 +32,9 @@ class EKF:
         # self.state.q = np.array([[1.0, 0, 0, 0]]).T #qw qx qy qz
 
         self.tau = 25 # Acceleration damping
-
         self.g = np.array([0, 0, -9.81])
-
         self.VC_to_head = SE3.Identity()
+        self.precompute_derivatives()
 
         # initialize previous time steps for computing derivatives
         self.p_prev = np.array([self.forward_kinematics(i, self.thetas).translation() for i in range(self.n_links)]).T
@@ -172,10 +171,10 @@ class EKF:
             link_to_body = R_body_to_head.T @ R_link_to_head
 
             daccel_da = link_to_body.T @ SO3(wxyz_to_xyzw(self.state.q)).rotation().T
-            daccel_dqw = link_to_body.T @ self.dR_dq(0, self.state.q).T @ (self.g + self.state.a)
-            daccel_dqx = link_to_body.T @ self.dR_dq(1, self.state.q).T @ (self.g + self.state.a)
-            daccel_dqy = link_to_body.T @ self.dR_dq(2, self.state.q).T @ (self.g + self.state.a)
-            daccel_dqz = link_to_body.T @ self.dR_dq(3, self.state.q).T @ (self.g + self.state.a)
+            daccel_dqw = link_to_body.T @ self.dR_dq[0](self.state.q).T @ (self.g + self.state.a)
+            daccel_dqx = link_to_body.T @ self.dR_dq[1](self.state.q).T @ (self.g + self.state.a)
+            daccel_dqy = link_to_body.T @ self.dR_dq[2](self.state.q).T @ (self.g + self.state.a)
+            daccel_dqz = link_to_body.T @ self.dR_dq[3](self.state.q).T @ (self.g + self.state.a)
             dgyro_dw = link_to_body.T
             
             H[3*i:3*(i+1), 0:3] = daccel_da
@@ -191,22 +190,27 @@ class EKF:
         F = self.process_jacobian(dt)
         self.P = F @ self.P @ F.T + self.Q
 
-
-    def dR_dq(self, i: int, q_in: NDArray):
+    def precompute_derivatives(self):
         from sympy.abc import w, x, y, z
-        from sympy import Matrix
+        from sympy import Matrix, lambdify
 
         q = [w, x, y, z]
 
         R_q = Matrix([[w**2 + x**2 - y**2 - z**2,    2*(x * y - w * z),         2 * (x * z + w * y)],
                      [2 * (x * y + w * z),      w**2 - x**2 + y**2 - z**2,     2 * (y * z - w * x)],
                      [2 * (x * z - w * z),      2 * (y * z + w * x),       w**2 - x**2 - y**2 + z**2]])
+
+        self.dR_dq = []
+        for i in range(4):
+            expr = R_q.diff(q[i])
+            self.dR_dq.append(lambdify([q], expr, "numpy"))
         
-        zippy = list(zip(q, q_in))
 
-        result = R_q.diff(q[i])
+    # def dR_dq(self, i: int, q_in: NDArray):
+    #     # return np.eye(3)
 
-        return np.array(result.subs(zippy))
+    #     zippy = list(zip(q, q_in))
+    #     return np.array(result.subs(zippy))
 
 
     def update(self, encoders, accelerations, gyros, dt) -> None:

@@ -223,7 +223,7 @@ def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
     ax[-1].set_xlabel("Time (s)")
     # plt.show()
 
-def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
+def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data, gt_q_data):
     
     # plot acceleration
     fig, ax = plt.subplots(3, 1, sharex=True)
@@ -263,19 +263,23 @@ def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
     
     # plot quaternion
     fig, ax = plt.subplots(4, 1, sharex=True)
-    ax[0].plot(t1, ekf_q_data[:, 0])
+    ax[0].plot(t1, ekf_q_data[:, 0], label="EKF")
+    ax[0].plot(t1, gt_q_data[:, 0], label="Ground Truth")
     ax[0].grid(True)
     ax[0].set_title("Quaternion W")
     
-    ax[1].plot(t1, ekf_q_data[:, 1])
+    ax[1].plot(t1, ekf_q_data[:, 1], label="EKF")
+    ax[1].plot(t1, gt_q_data[:, 1], label="Ground Truth")
     ax[1].grid(True)
     ax[1].set_title("Quaternion X")
     
-    ax[2].plot(t1, ekf_q_data[:, 2])
+    ax[2].plot(t1, ekf_q_data[:, 2], label="EKF")
+    ax[2].plot(t1, gt_q_data[:, 2], label="Ground Truth")
     ax[2].grid(True)
     ax[2].set_title("Quaternion Y")
     
-    ax[3].plot(t1, ekf_q_data[:, 3])
+    ax[3].plot(t1, ekf_q_data[:, 3], label="EKF")
+    ax[3].plot(t1, gt_q_data[:, 3], label="Ground Truth")
     ax[3].grid(True)
     ax[3].set_title("Quaternion Z")
     ax[3].set_xlabel("Time (s)")

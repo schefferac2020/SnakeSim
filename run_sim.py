@@ -20,7 +20,7 @@ def run():
     # Setup pybullet client
     p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-    p.setGravity(0, 0, -10)
+    p.setGravity(0, 0, -9.81)
     p.setRealTimeSimulation(0)
     p.setTimeStep(dt)
 
@@ -31,7 +31,7 @@ def run():
     # Make the snake
     N = 8  # links other than the red head
     link_length = 0.5
-    snake = SnakeRobot(N, link_length, [0, 0, 0.5], [0, 0, 0, 1])
+    snake = SnakeRobot(N, link_length, [0, 0, 0.3], [0, 0, 0, 1])
     controller = SnakeController(N)
 
     ekf = EKF(N, link_length)
@@ -59,13 +59,15 @@ def run():
     ekf_a_data = []
     ekf_w_data = []
     ekf_q_data = []
+    gt_q_data = []
 
     # Simulate
     t_sim = 0
     while p.isConnected():
         p.stepSimulation()
         snake.update_virtual_chassis_frame()
-        # snake.check_fwd_kinematics()
+        VC_in_world = snake.T_head_to_world @ snake.T_VC_to_head
+        gt_q_data.append(R_to_q(VC_in_world[:3, :3]))
 
         quit = False
         keys = p.getKeyboardEvents()
@@ -157,7 +159,8 @@ def run():
     ekf_a_data = np.array(ekf_a_data)
     ekf_w_data = np.array(ekf_w_data)
     ekf_q_data = np.array(ekf_q_data)
-    plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
+    gt_q_data = np.array(gt_q_data)
+    plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data, gt_q_data)
     plt.show()
     
     # p.disconnect()

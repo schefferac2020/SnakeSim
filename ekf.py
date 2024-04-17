@@ -244,6 +244,8 @@ class EKF:
         accel = np.zeros(3 * self.n_links)
         for i in range(self.n_links):
 
+            
+
             # predicted acceleration due to gravity
             link_to_head = self.forward_kinematics(i, self.thetas)
             R_link_to_head = link_to_head.rotation()
@@ -256,6 +258,7 @@ class EKF:
             body_to_head[:3, 3] = p_body_to_head[:3, 0]
 
             p_link_in_body = (np.linalg.inv(body_to_head) @ p_link_in_head)[:3, 0]
+            p_link_in_body = (self.T_head_to_world @ p_link_in_head)[:3, 0]
             if i == 0:
                 print(p_link_in_body)
 

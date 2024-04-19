@@ -211,15 +211,11 @@ class EKF:
             self.dR_dq.append(lambdify([q], expr, "numpy"))
         
     def update(self, encoders, accelerations, gyros, dt) -> None:
-        self.thetas = encoders
+        self.thetas = np.copy(encoders)
 
         predicted_accelerations = self.acceleration_prediction(dt)
         predicted_gyroscope = self.gyroscope_prediction(dt)
 
-        # debug
-        self.last_predicted_accelerations = predicted_accelerations
-        self.last_predicted_gyroscope = predicted_gyroscope
-        
         m_vec = np.concatenate([accelerations, gyros])
         pred_vec = np.concatenate([predicted_accelerations, predicted_gyroscope]) 
         H = self.measurement_jacobian()
@@ -236,6 +232,11 @@ class EKF:
         self.state.w = state_vec[7:10]
         
         self.P = (np.eye(self.n_states) - K @ H) @ self.P
+
+        # debug
+        self.last_predicted_accelerations = predicted_accelerations
+        self.last_predicted_gyroscope = predicted_gyroscope
+        self.last_innovation = np.copy(innovation)
         
         # normalize quaternion to prevent divergence
         self.state.q /= np.linalg.norm(self.state.q)
@@ -260,7 +261,8 @@ class EKF:
 
             p_link_in_body = (np.linalg.inv(body_to_head) @ p_link_in_head)[:3, 0]
             if i == 0:
-                print(p_link_in_body)
+                # print(p_link_in_body)
+                ...
 
             # body_to_world_q = R_to_q(self.T_head_to_world[:3,:3] @ R_body_to_head)
             # body_to_world = SO3(wxyz_to_xyzw(body_to_world_q)).rotation()

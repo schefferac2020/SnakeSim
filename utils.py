@@ -157,6 +157,35 @@ def plot_accel(ts, accel_data, link_ids, fig_name):
     ax[2].legend()
     # plt.show()
 
+def plot_accel_combined(ts, accel_data, pred_accel_data, link_ids, fig_name):
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    for i in link_ids:
+        line, = ax[0].plot(ts, accel_data[:, i*3], label=f"Link {i+1}")
+        ax[0].plot(ts, pred_accel_data[:, i*3], label=f"Predicted Link {i+1}", linestyle="--", color=line.get_color())
+    ax[0].grid(True)
+    ax[0].set_title(fig_name + " X")
+    ax[0].set_ylabel("m/s^2")
+    ax[0].set_xlabel("Time (s)")
+    ax[0].legend()
+    
+    for i in link_ids:
+        line, = ax[1].plot(ts, accel_data[:, i*3 + 1], label=f"Link {i+1}")
+        ax[1].plot(ts, pred_accel_data[:, i*3 + 1], label=f"Predicted Link {i+1}", linestyle="--", color=line.get_color())
+    ax[1].grid(True)
+    ax[1].set_title(fig_name + " Y")
+    ax[1].set_ylabel("m/s^2")
+    ax[1].set_xlabel("Time (s)")
+    ax[1].legend()
+    
+    for i in link_ids:
+        line, = ax[2].plot(ts, accel_data[:, i*3 + 2], label=f"Link {i+1}")
+        ax[2].plot(ts, pred_accel_data[:, i*3 + 2], label=f"Predicted Link {i+1}", linestyle="--", color=line.get_color())
+    ax[2].grid(True)
+    ax[2].set_title(f"{fig_name} Z")
+    ax[2].set_ylabel("m/s^2")
+    ax[2].set_xlabel("Time (s)")
+    ax[2].legend()
+
 def plot_gyro(ts, gyro_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
     for i in link_ids:

@@ -273,7 +273,7 @@ class SnakeRobot:
             lin_acc_world = np.mean(self.prev_lin_vel[link_idx, :, :], axis=1) / dt / 100
 
             # Add gravity vector
-            # lin_acc_world += self.g
+            lin_acc_world += self.g
 
             # Convert lin_acc and ang_vel to link frame
             # link_pos_world, link_orient_world = (np.array(link_state[0]), np.array(link_state[1]))

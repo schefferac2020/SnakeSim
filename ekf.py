@@ -255,22 +255,25 @@ class EKF:
             body_to_head[:3, :3] = R_body_to_head
             body_to_head[:3, 3] = p_body_to_head[:3, 0]
 
+            link_to_body = body_to_head[:3,:3].T @ link_to_head.rotation()
+
+
             p_link_in_body = (np.linalg.inv(body_to_head) @ p_link_in_head)[:3, 0]
             if i == 0:
                 print(p_link_in_body)
 
-            # body_to_world = SO3(wxyz_to_xyzw(self.state.q)).rotation()
-            body_to_world_q = R_to_q(self.T_head_to_world[:3,:3] @ R_body_to_head)
-            body_to_world = SO3(wxyz_to_xyzw(body_to_world_q)).rotation()
+            # body_to_world_q = R_to_q(self.T_head_to_world[:3,:3] @ R_body_to_head)
+            # body_to_world = SO3(wxyz_to_xyzw(body_to_world_q)).rotation()
+            body_to_world = SO3(wxyz_to_xyzw(self.state.q)).rotation()
 
             # predicted acceleration due to internal motion
-            link_accel_in_body = (p_link_in_body - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2) / 100
+            link_accel_in_body = (p_link_in_body - 2*self.p_prev[:, i] + self.p_prev_prev[:, i]) / (dt**2) / 1000
             self.p_prev_prev[:, i] = self.p_prev[:, i]
             self.p_prev[:, i] = p_link_in_body
 
             # print(link_to_body.T.shape, body_to_world.T.shape, self.state.a.shape, R_body_to_head.T.shape, link_accel_in_head.shape)
-            # accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + R_body_to_head.T @ link_accel_in_head 
-            accel_pred = link_accel_in_body
+            accel_pred = link_to_body.T @ body_to_world.T @ (self.g + self.state.a) + link_to_body.T @ link_accel_in_body# + R_body_to_head.T @ link_accel_in_head 
+            # accel_pred = link_accel_in_body
 
             # predicted acceleration from robot motion
             accel[3*i:3*(i+1)] = accel_pred

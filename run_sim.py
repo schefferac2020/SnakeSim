@@ -160,6 +160,7 @@ def run():
 
     pred_accel_data = np.array(pred_accel_data)
     print("The shape of pred_accel_data is", pred_accel_data.shape)
+    pred_accel_data[:120, :] *= 0 
     plot_accel(ts, pred_accel_data, np.arange(N + 1), fig_name="Predicted Accel")
     
     gyro_data = np.array(gyro_data)

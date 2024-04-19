@@ -67,7 +67,11 @@ def run():
         p.stepSimulation()
         snake.update_virtual_chassis_frame()
         VC_in_world = snake.T_head_to_world @ snake.T_VC_to_head
-        gt_q_data.append(R_to_q(VC_in_world[:3, :3]))
+        VC_in_world_q = R_to_q(VC_in_world[:3, :3])
+        gt_q_data.append(VC_in_world_q)
+        VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
+        ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
+        draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         quit = False
         keys = p.getKeyboardEvents()
@@ -115,11 +119,9 @@ def run():
         ekf.set_VC_Transform(snake.T_VC_to_head)
         ekf.set_head_to_world_Transform(snake.T_head_to_world)
         ekf.predict(dt)
-        VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
-        ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
-        draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Update Step of EKF
+        ekf.gt_q = VC_in_world_q
         ekf.update(encoders, accelerometers, gyros, dt)
         ekf_a_data.append(np.copy(ekf.state.a))
         ekf_w_data.append(np.copy(ekf.state.w))

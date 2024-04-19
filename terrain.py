@@ -4,11 +4,12 @@ import pybullet as p
 
 
 class Terrain:
-    def __init__(self):
-        """
-        Make the terrain
-        """
+    def grid_to_world(self, x, y):
+        t = np.array([x, y, self.heightmap[x, y]])
+        t[:2] -= np.array(self.heightmap.shape) / 2
+        return t
 
+    def __init__(self):
         rows, cols = 16, 16
         lateral_scale = 2
         vertical_scale = 8
@@ -30,7 +31,7 @@ class Terrain:
         )
         self.terrain_multi_body = p.createMultiBody(0, self.terrain_shape)
 
-        # Precompute normals
+        # # Precompute normals
         # self.normals = np.zeros((cols, rows, 3), dtype=float)
         # for x in range(1, cols):
         #     for y in range(1, rows):
@@ -38,8 +39,8 @@ class Terrain:
         #         # I figured this would be most similar to the snake giving back normal values from contact
         #         x_c = x - cols / 2
         #         y_c = y - rows / 2
-        #         hit, = client.rayTest([x_c, y_c, 100], [x_c, y_c, -100])
+        #         hit, = p.rayTest([x_c, y_c, 100], [x_c, y_c, -100])
         #         hit_normal = hit[4]
         #         self.normals[x, y] = hit_normal
         #         point = np.array([x_c, y_c, self.heightmap[x, y]])
-        #         client.addUserDebugLine(point, point + hit_normal, [1, 0, 0])
+        #         p.addUserDebugLine(point, point + hit_normal, [1, 0, 0])

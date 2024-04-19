@@ -25,8 +25,9 @@ def run():
     p.setTimeStep(dt)
 
     # Make the terrain
-    # terrain = Terrain()
-    p.loadURDF("plane.urdf")
+    terrain = Terrain()
+
+    # p.loadURDF("plane.urdf")
 
     # Make the snake
     N = 8  # links other than the red head
@@ -38,14 +39,13 @@ def run():
     ekf.state.w = np.array([0.5, 0.0, 0.0])
     ekf.state.a = np.array([0.0, 0.0, 0.5])
 
+    pf = TerrainParticleFilter(N, terrain)
+
     # Initialize q to be the start q of snake virtual chasis
     snake.update_virtual_chassis_frame()
     T_virtual_chassis_wrt_world = snake.T_body_to_world @ snake.T_VC_to_head
-    q_virutal_wrt_world = R_to_q(T_virtual_chassis_wrt_world[:3,:3])
+    q_virutal_wrt_world = R_to_q(T_virtual_chassis_wrt_world[:3, :3])
     ekf.state.q = np.array(q_virutal_wrt_world)
-
-
-    # pf = TerrainParticleFilter(N, 100, terrain)
 
     forward_cmd = 0
     turn_cmd = 0
@@ -112,7 +112,7 @@ def run():
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
-        # pf.prediction(orientation, twist)
+        pf.prediction(orientation, twist)
 
         # TODO: make this a snake function
         contact_normals = []
@@ -125,9 +125,9 @@ def run():
                 if a_id == 0:
                     contact_normals.append((b_id, contact_normal_on_b))
 
-        # pf.correction(contact_normals)
+        pf.correction(contact_normals)
 
-        # doink = pf.filter()
+        pf.filter()
         # print(doink)
 
         time.sleep(dt)
@@ -137,13 +137,13 @@ def run():
     accel_data = np.array(accel_data)
     ts = np.linspace(0, t_sim, accel_data.shape[0])
     plot_accel(ts, accel_data, np.arange(N + 1))
-    
+
     gyro_data = np.array(gyro_data)
     plot_gyro(ts, gyro_data, np.arange(N + 1))
-    
+
     vel_data = np.array(vel_data)
     plot_vel(ts, vel_data, np.arange(N + 1))
-    
+
     enc_data = np.array(enc_data)
     cmd_angle_data = np.array(cmd_angle_data)
     plot_joint_angles(ts, cmd_angle_data, enc_data, np.arange(N))
@@ -153,7 +153,7 @@ def run():
     ekf_q_data = np.array(ekf_q_data)
     plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
     plt.show()
-    
+
     p.disconnect()
 
 

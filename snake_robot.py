@@ -266,7 +266,7 @@ class SnakeRobot:
             self.link_positions.append(link_pos_world)
 
         
-        np.roll(self.prev_lin_vel, 1, axis=2)
+        self.prev_lin_vel = np.roll(self.prev_lin_vel, 1, axis=2)
         for link_idx in range(self.n_links):
             # Calculate internal acceleration in world frame
             self.prev_lin_vel[link_idx, :, 0] = lin_vels[link_idx]

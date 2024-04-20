@@ -3,7 +3,6 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 import matplotlib.pyplot as plt
-from dataclasses import replace
 from manifpy import SE3Tangent
 
 from ekf import EKF
@@ -60,6 +59,7 @@ def run():
     ekf_w_data = []
     ekf_q_data = []
     gt_q_data = []
+    pred_accel_data = []
 
     # Simulate
     t_sim = 0
@@ -67,7 +67,11 @@ def run():
         p.stepSimulation()
         snake.update_virtual_chassis_frame()
         VC_in_world = snake.T_head_to_world @ snake.T_VC_to_head
-        gt_q_data.append(R_to_q(VC_in_world[:3, :3]))
+        VC_in_world_q = R_to_q(VC_in_world[:3, :3])
+        gt_q_data.append(VC_in_world_q)
+        VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
+        ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
+        draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         quit = False
         keys = p.getKeyboardEvents()
@@ -89,16 +93,14 @@ def run():
         # angles = controller.rolling_gait(t_sim)
         angles = controller.inchworm_gait(t_sim, 5 * forward_cmd, -0.2 * turn_cmd)
         # angles = [0, 0.5]* 8
+        # angles = [0] * 8
+        # angles[1] = min(t_sim, np.pi / 4)
+        # angles[3] = min(t_sim, np.pi / 4)
+        # angles[5] = min(t_sim, np.pi / 4)
+        # print(angles[0])
+        # angles = np.roll(np.array(angles), 1)
         snake.set_motors(angles)
         cmd_angle_data.append(angles)
-
-        # Prediction step of the EKF
-        ekf.set_VC_Transform(snake.T_VC_to_head)
-        ekf.predict(dt)
-
-        VC_pos = (snake.T_head_to_world @ snake.T_VC_to_head)[0:3, 3]
-        ekf_transform = to_SE3(np.array(VC_pos), wxyz_to_xyzw(ekf.state.q))
-        draw_frame(snake.debug_items, "EKF_PREDICTION_STEP", ekf_transform)
 
         # Get Measurements
         encoders = snake.get_joint_angles()
@@ -109,12 +111,26 @@ def run():
         vel_data.append(velocities)
         enc_data.append(encoders)
 
+
+        # # wait for physics to settle before starting localization
+        # if t_sim > 1:
+
+        # Prediction step of the EKF
+        ekf.set_VC_Transform(snake.T_VC_to_head)
+        ekf.set_head_to_world_Transform(snake.T_head_to_world)
+        ekf.predict(dt)
+
         # Update Step of EKF
+        ekf.gt_q = VC_in_world_q
         ekf.update(encoders, accelerometers, gyros, dt)
         ekf_a_data.append(np.copy(ekf.state.a))
         ekf_w_data.append(np.copy(ekf.state.w))
         ekf_q_data.append(np.copy(ekf.state.q))
+
         snake.draw_accel_vectors_in_world(ekf.last_predicted_accelerations, [1, 0, 1], "ekf")
+        pred_accel_data.append(np.copy(ekf.last_predicted_accelerations))
+
+        # print(f"max innovation: {np.max(ekf.last_innovation)}")
 
         # Prediction step of the PF
         orientation = make_so3_nonstupid(ekf.state.q)
@@ -136,6 +152,11 @@ def run():
 
         # doink = pf.filter()
         # print(doink)
+        # else:
+        #     ekf_a_data.append(np.copy(ekf.state.a))
+        #     ekf_w_data.append(np.copy(ekf.state.w))
+        #     ekf_q_data.append(np.copy(ekf.state.q))
+        #     pred_accel_data.append(np.zeros(3* (N + 1)))
 
         time.sleep(dt)
         t_sim += dt
@@ -145,8 +166,15 @@ def run():
             p.disconnect()
 
     accel_data = np.array(accel_data)
+    pred_accel_data = np.array(pred_accel_data)
+    pred_accel_data[:120, :] *= 0 
+
     ts = np.linspace(0, t_sim, accel_data.shape[0])
-    plot_accel(ts, accel_data, np.arange(N + 1))
+    plot_accel(ts, accel_data, np.arange(N + 1), fig_name="IMU Accel")
+    # plot_accel(ts, pred_accel_data, np.arange(N + 1), fig_name="Predicted Accel")
+
+    # plot predicted versus actual accel data for the first and 3rd links
+    plot_accel_combined(ts, accel_data, pred_accel_data, np.array([1, 3]), fig_name="IMU Accel vs Predicted Accel")
     
     gyro_data = np.array(gyro_data)
     plot_gyro(ts, gyro_data, np.arange(N + 1))

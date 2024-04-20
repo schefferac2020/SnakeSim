@@ -2,14 +2,21 @@ import noise
 import numpy as np
 import pybullet as p
 
+from numpy.typing import NDArray
+
 
 class Terrain:
-    def grid_to_world(self, x, y):
+    def grid_to_world(self, x, y) -> NDArray:
         t = np.array([x, y, self.heightmap[x, y]])
         t[:2] -= np.array(self.heightmap.shape) / 2
         return t
 
-    def __init__(self, size=8, lateral_scale=2, vertical_scale=8):
+    def world_to_grid(self, x, y) -> NDArray:
+        t = np.array([x, y])
+        t += np.array(self.heightmap.shape) / 2
+        return t.astype(int)
+
+    def __init__(self, size=12, lateral_scale=2, vertical_scale=8) -> None:
         self.heightmap = np.zeros((size, size), dtype=float)
         for x in range(size):
             for y in range(size):

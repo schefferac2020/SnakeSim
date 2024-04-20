@@ -141,6 +141,11 @@ def make_se3_from_matrix(matrix: NDArray) -> SE3:
     return SE3(t, wxyz_to_xyzw(R_to_q(R)))
 
 
+def normalize_array(arr: NDArray) -> NDArray:
+    min_val, max_val = np.min(arr), np.max(arr)
+    return (arr - min_val) / (max_val - min_val)
+
+
 def plot_accel(ts, accel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
     for i in link_ids:

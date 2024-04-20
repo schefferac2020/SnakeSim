@@ -39,7 +39,7 @@ def run():
     ekf.state.w = np.array([0.5, 0.0, 0.0])
     ekf.state.a = np.array([0.0, 0.0, 0.5])
 
-    pf = TerrainParticleFilter(N, terrain)
+    pf = TerrainParticleFilter(terrain)
 
     # Initialize q to be the start q of snake virtual chasis
     snake.update_virtual_chassis_frame()
@@ -113,7 +113,7 @@ def run():
         vc_to_head = make_so3_from_matrix(snake.T_VC_to_head[:3, :3])
         head_in_map = make_so3_from_matrix(snake.T_body_to_world[:3, :3])
         vc_in_map = head_in_map * vc_to_head
-        twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
+        twist = SE3Tangent(np.array([-forward_cmd, 0, 0, 0, 0, turn_cmd]))
         pf.prediction(vc_in_map, twist)
 
         # TODO: make this a snake function
@@ -131,7 +131,8 @@ def run():
         vc_to_head = make_se3_from_matrix(snake.T_VC_to_head)
         pf.correction(contact_normals, vc_to_head, snake.get_joint_angles(), link_length)
 
-        pf.filter()
+        result = pf.filter()
+        draw_frame(snake.debug_items, "PF_CORRECTION_STEP", result.transform())
         # print(doink)
 
         time.sleep(dt)

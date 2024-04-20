@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pybullet as p
-import matplotlib.pyplot as plt
 from manifpy import SE3, SE3Tangent, SO3
 from numpy.typing import NDArray
 
@@ -94,7 +94,7 @@ def forward_kinematics(i: int, link_length: float, theta: NDArray) -> SE3:
     :param theta:   Joint angles
     :return:        Transformation matrix from joint i to body frame
     """
-    g_si0 = SE3(0, link_length * (i), 0, 0, 0, 0)
+    g_si0 = SE3(0, link_length * i, 0, 0, 0, 0)
 
     g_si = g_si0
     for j in reversed(range(i)):
@@ -115,10 +115,10 @@ def ang_vel_wedge(w) -> NDArray:
                      [w[2], w[1], -w[0], 0]])
 
 
-def make_so3_nonstupid(q) -> SO3:
-    nq = q.copy()
-    nq /= np.linalg.norm(nq)
-    return SO3(nq)
+# def make_so3_nonstupid(q) -> SO3:
+#     nq = q.copy()
+#     nq /= np.linalg.norm(nq)
+#     return SO3(nq)
 
 
 def wxyz_to_xyzw(q):
@@ -130,26 +130,37 @@ def xyzw_too_wxyz(q):
     q_new = np.roll(q, 1)
     return q_new / np.linalg.norm(q_new)
 
+
+def make_so3_from_matrix(matrix: NDArray) -> SO3:
+    return SO3(wxyz_to_xyzw(R_to_q(matrix)))
+
+
+def make_se3_from_matrix(matrix: NDArray) -> SE3:
+    R = matrix[:3, :3]
+    t = matrix[:3, 3]
+    return SE3(t, wxyz_to_xyzw(R_to_q(R)))
+
+
 def plot_accel(ts, accel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
     for i in link_ids:
-        ax[0].plot(ts, accel_data[:, i*3], label=f"Link {i+1}")
+        ax[0].plot(ts, accel_data[:, i * 3], label=f"Link {i + 1}")
     ax[0].grid(True)
     ax[0].set_title("Accel X")
     ax[0].set_ylabel("m/s^2")
     ax[0].set_xlabel("Time (s)")
     ax[0].legend()
-    
+
     for i in link_ids:
-        ax[1].plot(ts, accel_data[:, i*3 + 1], label=f"Link {i+1}")
+        ax[1].plot(ts, accel_data[:, i * 3 + 1], label=f"Link {i + 1}")
     ax[1].grid(True)
     ax[1].set_title("Accel Y")
     ax[1].set_ylabel("m/s^2")
     ax[1].set_xlabel("Time (s)")
     ax[1].legend()
-    
+
     for i in link_ids:
-        ax[2].plot(ts, accel_data[:, i*3 + 2], label=f"Link {i+1}")
+        ax[2].plot(ts, accel_data[:, i * 3 + 2], label=f"Link {i + 1}")
     ax[2].grid(True)
     ax[2].set_title("Accel Z")
     ax[2].set_ylabel("m/s^2")
@@ -157,59 +168,62 @@ def plot_accel(ts, accel_data, link_ids):
     ax[2].legend()
     # plt.show()
 
+
 def plot_gyro(ts, gyro_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
     for i in link_ids:
-        ax[0].plot(ts, gyro_data[:, i*3], label=f"Link {i+1}")
+        ax[0].plot(ts, gyro_data[:, i * 3], label=f"Link {i + 1}")
     ax[0].grid(True)
     ax[0].set_title("Gyro X")
     ax[0].set_ylabel("rad/s")
     ax[0].set_xlabel("Time (s)")
     ax[0].legend()
-    
+
     for i in link_ids:
-        ax[1].plot(ts, gyro_data[:, i*3 + 1], label=f"Link {i+1}")
+        ax[1].plot(ts, gyro_data[:, i * 3 + 1], label=f"Link {i + 1}")
     ax[1].grid(True)
     ax[1].set_title("Gyro Y")
     ax[1].set_ylabel("rad/s")
     ax[1].set_xlabel("Time (s)")
     ax[1].legend()
-    
+
     for i in link_ids:
-        ax[2].plot(ts, gyro_data[:, i*3 + 2], label=f"Link {i+1}")
+        ax[2].plot(ts, gyro_data[:, i * 3 + 2], label=f"Link {i + 1}")
     ax[2].grid(True)
     ax[2].set_title("Gyro Z")
     ax[2].set_ylabel("rad/s")
     ax[2].set_xlabel("Time (s)")
     ax[2].legend()
     # plt.show()
-    
+
+
 def plot_vel(ts, vel_data, link_ids):
     fig, ax = plt.subplots(3, 1, sharex=True)
     for i in link_ids:
-        ax[0].plot(ts, vel_data[:, i*3], label=f"Link {i+1}")
+        ax[0].plot(ts, vel_data[:, i * 3], label=f"Link {i + 1}")
     ax[0].grid(True)
     ax[0].set_title("Velocity X")
     ax[0].set_ylabel("m/s")
     ax[0].set_xlabel("Time (s)")
     ax[0].legend()
-    
+
     for i in link_ids:
-        ax[1].plot(ts, vel_data[:, i*3 + 1], label=f"Link {i+1}")
+        ax[1].plot(ts, vel_data[:, i * 3 + 1], label=f"Link {i + 1}")
     ax[1].grid(True)
     ax[1].set_title("Velocity Y")
     ax[1].set_ylabel("m/s")
     ax[1].set_xlabel("Time (s)")
     ax[1].legend()
-    
+
     for i in link_ids:
-        ax[2].plot(ts, vel_data[:, i*3 + 2], label=f"Link {i+1}")
+        ax[2].plot(ts, vel_data[:, i * 3 + 2], label=f"Link {i + 1}")
     ax[2].grid(True)
     ax[2].set_title("Velocity Z")
     ax[2].set_ylabel("m/s")
     ax[2].set_xlabel("Time (s)")
     ax[2].legend()
     # plt.show()
+
 
 def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
     fig, ax = plt.subplots(len(joint_ids), 1, sharex=True)
@@ -223,8 +237,8 @@ def plot_joint_angles(ts, cmd_angle_data, enc_data, joint_ids):
     ax[-1].set_xlabel("Time (s)")
     # plt.show()
 
+
 def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
-    
     # plot acceleration
     fig, ax = plt.subplots(3, 1, sharex=True)
     ax[0].plot(t1, ekf_a_data[:, 0])
@@ -236,7 +250,7 @@ def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
     ax[1].grid(True)
     ax[1].set_title("Accel Y")
     ax[1].set_ylabel("m/s^2")
-    
+
     ax[2].plot(t1, ekf_a_data[:, 2])
     ax[2].grid(True)
     ax[2].set_title("Accel Z")
@@ -250,31 +264,31 @@ def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
     ax[0].grid(True)
     ax[0].set_title("Gyro X")
     ax[0].set_ylabel("rad/s")
-    
+
     ax[1].plot(t1, ekf_w_data[:, 1])
     ax[1].grid(True)
     ax[1].set_title("Gyro Y")
     ax[1].set_ylabel("rad/s")
-    
+
     ax[2].plot(t1, ekf_w_data[:, 2])
     ax[2].grid(True)
     ax[2].set_title("Gyro Z")
     ax[2].set_ylabel("rad/s")
-    
+
     # plot quaternion
     fig, ax = plt.subplots(4, 1, sharex=True)
     ax[0].plot(t1, ekf_q_data[:, 0])
     ax[0].grid(True)
     ax[0].set_title("Quaternion W")
-    
+
     ax[1].plot(t1, ekf_q_data[:, 1])
     ax[1].grid(True)
     ax[1].set_title("Quaternion X")
-    
+
     ax[2].plot(t1, ekf_q_data[:, 2])
     ax[2].grid(True)
     ax[2].set_title("Quaternion Y")
-    
+
     ax[3].plot(t1, ekf_q_data[:, 3])
     ax[3].grid(True)
     ax[3].set_title("Quaternion Z")

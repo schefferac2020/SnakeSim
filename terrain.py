@@ -9,25 +9,21 @@ class Terrain:
         t[:2] -= np.array(self.heightmap.shape) / 2
         return t
 
-    def __init__(self):
-        rows, cols = 16, 16
-        lateral_scale = 2
-        vertical_scale = 8
-
-        self.heightmap = np.zeros((cols, rows), dtype=float)
-        for x in range(cols):
-            for y in range(rows):
+    def __init__(self, size=8, lateral_scale=2, vertical_scale=8):
+        self.heightmap = np.zeros((size, size), dtype=float)
+        for x in range(size):
+            for y in range(size):
                 # Perlin needs inputs between 0 and 1
                 # We also need to scale as it outputs between -1 and 1
                 self.heightmap[x, y] = vertical_scale * noise.pnoise2(
-                    x / cols / lateral_scale, y / rows / lateral_scale,
+                    x / size / lateral_scale, y / size / lateral_scale,
                     octaves=6, persistence=0.5, lacunarity=2.0, base=0,
                 )
 
         self.terrain_shape = p.createCollisionShape(
             shapeType=p.GEOM_HEIGHTFIELD, heightfieldData=self.heightmap.T.reshape(-1),
-            heightfieldTextureScaling=rows - 1,
-            numHeightfieldRows=rows, numHeightfieldColumns=cols,
+            heightfieldTextureScaling=size - 1,
+            numHeightfieldRows=size, numHeightfieldColumns=size,
         )
         self.terrain_multi_body = p.createMultiBody(0, self.terrain_shape)
 

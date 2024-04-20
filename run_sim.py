@@ -110,22 +110,26 @@ def run():
         ekf_q_data.append(np.copy(ekf.state.q))
 
         # Prediction step of the PF
-        orientation = make_so3_nonstupid(ekf.state.q)
+        vc_to_head = make_so3_from_matrix(snake.T_VC_to_head[:3, :3])
+        head_in_map = make_so3_from_matrix(snake.T_body_to_world[:3, :3])
+        vc_in_map = head_in_map * vc_to_head
         twist = SE3Tangent(np.array([forward_cmd, 0, 0, 0, 0, turn_cmd]))
-        pf.prediction(orientation, twist)
+        pf.prediction(vc_in_map, twist)
 
         # TODO: make this a snake function
-        contact_normals = []
+        contact_normals = {}
         contacts = p.getContactPoints()
         if contacts:
             for contact in contacts:
                 _, _, a_id, b_id, _, contact_position_on_a, contact_position_on_b, contact_normal_on_b, *_ = contact
                 # Collider A always seems to have the lower id
                 # I think the terrain is 0 as it is added first
+                # Ignore the intermediate links in the snake by looking at even-ness
                 if a_id == 0:
-                    contact_normals.append((b_id, contact_normal_on_b))
+                    contact_normals[int(b_id / 2)] = contact_normal_on_b
 
-        pf.correction(contact_normals)
+        vc_to_head = make_se3_from_matrix(snake.T_VC_to_head)
+        pf.correction(contact_normals, vc_to_head, snake.get_joint_angles(), link_length)
 
         pf.filter()
         # print(doink)

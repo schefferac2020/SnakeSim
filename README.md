@@ -9,6 +9,8 @@ Michigan Rob530 Final Project by [Riley Bridges](https://github.com/rbridges12),
     <a href="https://www.example.com">Video TODO</a>
     |
     <a href="https://docs.google.com/presentation/d/1imR_9fCTcW1SoMmwVYUvgVVFCQsc4buMuiCciz8RrtQ/edit?usp=sharing">Slides</a>
+    |
+    <a href="https://docs.google.com/presentation/d/15Pu1QHP4YL-AUiIt0pgZp1me8Tf03UgqsDiodNI4CZw/edit?usp=sharing">Poster</a>
     <img src="./media/sim_with_VC_frame (1).png" alt="Image Description">
 </div>
 

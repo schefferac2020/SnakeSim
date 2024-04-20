@@ -40,3 +40,5 @@ $ python3 run_sim.py
 <div style="text-align:center;">
     <img src="./media/diagram.png" alt="Image Description">
 </div>
+
+For more details, please refer to our [TODO paper](dkljafkjsdhf).

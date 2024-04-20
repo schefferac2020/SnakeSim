@@ -138,25 +138,25 @@ def run():
         t_sim += dt
         # print(t_sim)
 
-    accel_data = np.array(accel_data)
-    ts = np.linspace(0, t_sim, accel_data.shape[0])
-    plot_accel(ts, accel_data, np.arange(N + 1))
-
-    gyro_data = np.array(gyro_data)
-    plot_gyro(ts, gyro_data, np.arange(N + 1))
-
-    vel_data = np.array(vel_data)
-    plot_vel(ts, vel_data, np.arange(N + 1))
-
-    enc_data = np.array(enc_data)
-    cmd_angle_data = np.array(cmd_angle_data)
-    plot_joint_angles(ts, cmd_angle_data, enc_data, np.arange(N))
-
-    ekf_a_data = np.array(ekf_a_data)
-    ekf_w_data = np.array(ekf_w_data)
-    ekf_q_data = np.array(ekf_q_data)
-    plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
-    plt.show()
+    # accel_data = np.array(accel_data)
+    # ts = np.linspace(0, t_sim, accel_data.shape[0])
+    # plot_accel(ts, accel_data, np.arange(N + 1))
+    #
+    # gyro_data = np.array(gyro_data)
+    # plot_gyro(ts, gyro_data, np.arange(N + 1))
+    #
+    # vel_data = np.array(vel_data)
+    # plot_vel(ts, vel_data, np.arange(N + 1))
+    #
+    # enc_data = np.array(enc_data)
+    # cmd_angle_data = np.array(cmd_angle_data)
+    # plot_joint_angles(ts, cmd_angle_data, enc_data, np.arange(N))
+    #
+    # ekf_a_data = np.array(ekf_a_data)
+    # ekf_w_data = np.array(ekf_w_data)
+    # ekf_q_data = np.array(ekf_q_data)
+    # plot_ekf_data(ts, ekf_a_data, ekf_w_data, ekf_q_data)
+    # plt.show()
 
     p.disconnect()
 

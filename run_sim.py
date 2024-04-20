@@ -114,6 +114,7 @@ def run():
         head_in_map = make_so3_from_matrix(snake.T_body_to_world[:3, :3])
         vc_in_map = head_in_map * vc_to_head
         twist = SE3Tangent(np.array([-forward_cmd, 0, 0, 0, 0, turn_cmd]))
+        # TODO: replace with output of EKF
         pf.prediction(vc_in_map, twist)
 
         # TODO: make this a snake function
@@ -133,11 +134,9 @@ def run():
 
         result = pf.filter()
         draw_frame(snake.debug_items, "PF_CORRECTION_STEP", result.transform())
-        # print(doink)
 
         time.sleep(dt)
         t_sim += dt
-        # print(t_sim)
 
     # accel_data = np.array(accel_data)
     # ts = np.linspace(0, t_sim, accel_data.shape[0])

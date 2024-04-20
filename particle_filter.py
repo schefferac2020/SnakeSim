@@ -83,15 +83,11 @@ class TerrainParticleFilter:
             particle.vc_in_map.coeffs()[3:] = vc_in_map.coeffs_copy()
 
         for particle in self.particles:
-            # perturbation = SE3Tangent(np.random.normal(0, 1, 6) * 0.1 * commanded_twist.coeffs_copy() ** 2)
-            # sample_twist = commanded_twist + perturbation
-            # particle.vc_in_map = particle.vc_in_map + sample_twist
-
             # Random walk model proportional to commanded twist magnitude
+            # Clip so that all directions get the chance to be considered
+            # Otherwise they clump into a shape and lose variety
             proportion = np.clip(0.01 * commanded_twist.coeffs() ** 2, 0.05, 1)
             particle.vc_in_map += SE3Tangent(np.random.normal(0, 1, 6) * proportion)
-
-            # particle.vc_in_map += SE3Tangent(np.random.normal(0, 0.1, 6))
 
             # Snap the particles back down to the terrain
             grid_x, grid_y = self.terrain.world_to_grid(*particle.vc_in_map.translation()[:2])

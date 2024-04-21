@@ -298,3 +298,27 @@ def plot_ekf_data(t1, ekf_a_data, ekf_w_data, ekf_q_data):
     ax[3].grid(True)
     ax[3].set_title("Quaternion Z")
     ax[3].set_xlabel("Time (s)")
+
+
+def plot_pf_data(t1, vc_ground_truth, vc_pf_estimates):
+    fig, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(t1, vc_ground_truth[:, 0], label="Ground Truth")
+    ax[0].plot(t1, vc_pf_estimates[:, 0], label="PF Estimate")
+    ax[0].grid(True)
+    ax[0].set_title("X Position")
+    ax[0].set_ylabel("m")
+    ax[0].legend()
+
+    ax[1].plot(t1, vc_ground_truth[:, 1], label="Ground Truth")
+    ax[1].plot(t1, vc_pf_estimates[:, 1], label="PF Estimate")
+    ax[1].grid(True)
+    ax[1].set_title("Y Position")
+    ax[1].set_ylabel("m")
+
+    ax[2].plot(t1, vc_ground_truth[:, 2], label="Ground Truth")
+    ax[2].plot(t1, vc_pf_estimates[:, 2], label="PF Estimate")
+    ax[2].grid(True)
+    ax[2].set_title("Z Position")
+    ax[2].set_ylabel("m")
+    ax[2].set_xlabel("Time (s)")
+    plt.show()

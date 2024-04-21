@@ -131,7 +131,7 @@ class TerrainParticleFilter:
             ))
         self.particles = new_samples
 
-    def filter(self) -> NDArray:
+    def filter(self) -> SE3:
         # Compute the weighted average of the particles
         # Only for position since they all have the same orientation
         average_position = np.zeros(3)

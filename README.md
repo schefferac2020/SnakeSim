@@ -27,6 +27,9 @@ Run the simulation:
 
 
 ### Running the Sim 
+For the Orientation EKF, checkout the `main` branch
+For the Position Particle Filter, checkout the `pf` branch
+
 ```bash
 $ python3 run_sim.py
 ```

@@ -6,7 +6,7 @@ Michigan Rob530 Final Project by [Riley Bridges](https://github.com/rbridges12),
 <div style="text-align:center;">
     <a href="https://www.example.com">Paper TODO</a>
     |
-    <a href="https://www.example.com">Video TODO</a>
+    <a href="https://www.youtube.com/watch?v=Mj-DBzjO0Z0">Video</a>
     |
     <a href="https://docs.google.com/presentation/d/1imR_9fCTcW1SoMmwVYUvgVVFCQsc4buMuiCciz8RrtQ/edit?usp=sharing">Slides</a>
     |
@@ -27,6 +27,9 @@ Run the simulation:
 
 
 ### Running the Sim 
+For the Orientation EKF, checkout the `main` branch
+For the Position Particle Filter, checkout the `pf` branch
+
 ```bash
 $ python3 run_sim.py
 ```

@@ -6,7 +6,7 @@ Michigan Rob530 Final Project by [Riley Bridges](https://github.com/rbridges12),
 <div style="text-align:center;">
     <a href="https://www.example.com">Paper TODO</a>
     |
-    <a href="https://www.example.com">Video TODO</a>
+    <a href="https://www.youtube.com/watch?v=Mj-DBzjO0Z0">Video</a>
     |
     <a href="https://docs.google.com/presentation/d/1imR_9fCTcW1SoMmwVYUvgVVFCQsc4buMuiCciz8RrtQ/edit?usp=sharing">Slides</a>
     |

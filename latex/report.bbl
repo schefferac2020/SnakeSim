@@ -1,0 +1,527 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global}
+    \entry{pybullet}{misc}{}
+      \name{author}{2}{}{%
+        {{hash=cb5d8e1abc8f025ae375181f1fa6aa94}{%
+           family={Coumans},
+           familyi={C\bibinitperiod},
+           given={Erwin},
+           giveni={E\bibinitperiod}}}%
+        {{hash=4e894fab619f8dd9d682b92cc981bf43}{%
+           family={Bai},
+           familyi={B\bibinitperiod},
+           given={Yunfei},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{0906d7c6225b74c0d4b0cc1970130529}
+      \strng{fullhash}{0906d7c6225b74c0d4b0cc1970130529}
+      \strng{bibnamehash}{0906d7c6225b74c0d4b0cc1970130529}
+      \strng{authorbibnamehash}{0906d7c6225b74c0d4b0cc1970130529}
+      \strng{authornamehash}{0906d7c6225b74c0d4b0cc1970130529}
+      \strng{authorfullhash}{0906d7c6225b74c0d4b0cc1970130529}
+      \field{sortinit}{1}
+      \field{sortinithash}{50c6687d7fc80f50136d75228e3c59ba}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{http://pybullet.org}}
+      \field{title}{PyBullet, a Python module for physics simulation for games, robotics and machine learning}
+      \field{year}{2016--2019}
+    \endentry
+    \entry{underwater}{article}{}
+      \name{author}{4}{}{%
+        {{hash=ddf175b31119450d65155395a464d4cc}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Bo},
+           giveni={B\bibinitperiod}}}%
+        {{hash=e8be6fda49b79313dd1e74411fa100a6}{%
+           family={Jiao},
+           familyi={J\bibinitperiod},
+           given={Mingyu},
+           giveni={M\bibinitperiod}}}%
+        {{hash=21ada0893b4adab8455fd11103494b25}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Xianku},
+           giveni={X\bibinitperiod}}}%
+        {{hash=fd09a8a6a1f4eb97506e6b295275bf7b}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Dalong},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{37583e4aadb6f968ae6ebb2b6147065f}
+      \strng{fullhash}{252ae7f41107508c1aa7b6546bb52c49}
+      \strng{bibnamehash}{37583e4aadb6f968ae6ebb2b6147065f}
+      \strng{authorbibnamehash}{37583e4aadb6f968ae6ebb2b6147065f}
+      \strng{authornamehash}{37583e4aadb6f968ae6ebb2b6147065f}
+      \strng{authorfullhash}{252ae7f41107508c1aa7b6546bb52c49}
+      \field{sortinit}{2}
+      \field{sortinithash}{ed39bb39cf854d5250e95b1c1f94f4ed}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This paper considers the tracking control of curved paths for an underwater snake robot, and investigates the methods used to improve energy efficiency. Combined with the path-planning method based on PCSI (parametric cubic-spline interpolation), an improved LOS (light of sight) method is proposed to design the controller and guide the robot to move along the desired path. The evaluation of the energy efficiency of robot locomotion is discussed. In particular, a pigeon-inspired optimization algorithm improved by quantum rules (QPIO) is proposed for dynamically selecting the gait parameters that maximize energy efficiency. Simulation results show that the proposed controller enables the robot to accurately follow the curved path and that the QPIO algorithm is effective in improving robot energy efficiency.}
+      \field{issn}{2077-1312}
+      \field{journaltitle}{Journal of Marine Science and Engineering}
+      \field{number}{1}
+      \field{title}{Path Tracking of an Underwater Snake Robot and Locomotion Efficiency Optimization Based on Improved Pigeon-Inspired Algorithm}
+      \field{volume}{10}
+      \field{year}{2022}
+      \verb{doi}
+      \verb 10.3390/jmse10010047
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mdpi.com/2077-1312/10/1/47
+      \endverb
+      \verb{url}
+      \verb https://www.mdpi.com/2077-1312/10/1/47
+      \endverb
+    \endentry
+    \entry{pipeline_inspection}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=439d4e7a680dc7be942490d398a1e6b4}{%
+           family={Selvarajan},
+           familyi={S\bibinitperiod},
+           given={Anojan},
+           giveni={A\bibinitperiod}}}%
+        {{hash=646a62e85ed1e95ce7b5b3233e355d97}{%
+           family={Kumar},
+           familyi={K\bibinitperiod},
+           given={Anirban},
+           giveni={A\bibinitperiod}}}%
+        {{hash=42bc1c9f63d34398ddce93bf00909907}{%
+           family={Sethu},
+           familyi={S\bibinitperiod},
+           given={Devika},
+           giveni={D\bibinitperiod}}}%
+        {{hash=6792014979cfd2012902ea8fa678c6b0}{%
+           family={Ramlan},
+           familyi={R\bibinitperiod},
+           given={Mohd\bibnamedelima Azwan},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod},
+           prefix={bin},
+           prefixi={b\bibinitperiod}}}%
+      }
+      \strng{namehash}{2d5b0cab3e616b811c47c52c87b16392}
+      \strng{fullhash}{3ae6d4c7b2eda7949fec2ae566aab227}
+      \strng{bibnamehash}{2d5b0cab3e616b811c47c52c87b16392}
+      \strng{authorbibnamehash}{2d5b0cab3e616b811c47c52c87b16392}
+      \strng{authornamehash}{2d5b0cab3e616b811c47c52c87b16392}
+      \strng{authorfullhash}{3ae6d4c7b2eda7949fec2ae566aab227}
+      \field{sortinit}{3}
+      \field{sortinithash}{a37a8ef248a93c322189792c34fc68c9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2019 IEEE Student Conference on Research and Development (SCOReD)}
+      \field{title}{Design and Development of a Snake-Robot for Pipeline Inspection}
+      \field{year}{2019}
+      \field{pages}{237\bibrangedash 242}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/SCORED.2019.8896254
+      \endverb
+      \keyw{Robotic snake;pipeline inspection;wireless control system;Wi-Fi camera;3D designed body;battery management system}
+    \endentry
+    \entry{enceladus}{article}{}
+      \name{author}{48}{}{%
+        {{hash=f92126e5fe2bcaffbc813efd1ce2f554}{%
+           family={Vaquero},
+           familyi={V\bibinitperiod},
+           given={T.\bibnamedelimi S.},
+           giveni={T\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=c0cc5e2638566982a11e99fbe35258ed}{%
+           family={Daddi},
+           familyi={D\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod}}}%
+        {{hash=1f251568963636823607915758115344}{%
+           family={Thakker},
+           familyi={T\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+        {{hash=85a56d515724c1b75384226eeb2f3919}{%
+           family={Paton},
+           familyi={P\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=d8db59f0388a90f18a12f5f0e945f8aa}{%
+           family={Jasour},
+           familyi={J\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=6a0dd32f337e09f480e60a6273faccba}{%
+           family={Strub},
+           familyi={S\bibinitperiod},
+           given={M.\bibnamedelimi P.},
+           giveni={M\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=be59171bfec14c489b8a29194166a213}{%
+           family={Swan},
+           familyi={S\bibinitperiod},
+           given={R.\bibnamedelimi M.},
+           giveni={R\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=552edc598942ce70058330bf52355f18}{%
+           family={Royce},
+           familyi={R\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+        {{hash=e393a41bfdb667d4ca178005bfbb68df}{%
+           family={Gildner},
+           familyi={G\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=2b774c4fc1147f1b39b36e758d81ff97}{%
+           family={Tosi},
+           familyi={T\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=a934d329f15a0c98897c9049ee98de4d}{%
+           family={Veismann},
+           familyi={V\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=88d92c8cbed19f0094ab8120a4f0298d}{%
+           family={Gavrilov},
+           familyi={G\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=cb561b5b56d66e99199153a7d1a01c3b}{%
+           family={Marteau},
+           familyi={M\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod}}}%
+        {{hash=48ce6d716576ff3c1130cd59a359dae4}{%
+           family={Bowkett},
+           familyi={B\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=adbd47e655eb4851b31606d2fd615a57}{%
+           family={Mola\bibnamedelima Lemus},
+           familyi={M\bibinitperiod\bibinitdelim L\bibinitperiod},
+           given={D.\bibnamedelimi Loret},
+           giveni={D\bibinitperiod\bibinitdelim L\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+        {{hash=c173b36941307cbf5fe76a8f41c80f1d}{%
+           family={Nakka},
+           familyi={N\bibinitperiod},
+           given={Y.},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=02db8d3d1e45c7bf29ee488e7508e6b0}{%
+           family={Hockman},
+           familyi={H\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod}}}%
+        {{hash=839aca8e3e409f191431a416905a7e10}{%
+           family={Orekhov},
+           familyi={O\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=5cd72b3d9ddc79c950502a694cbff6da}{%
+           family={Hasseler},
+           familyi={H\bibinitperiod},
+           given={T.\bibnamedelimi D.},
+           giveni={T\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=c0f25915dc83876b4bd6cd47bab8f9ea}{%
+           family={Leake},
+           familyi={L\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod}}}%
+        {{hash=fc9c52f333bd317940ffd07588df8b93}{%
+           family={Nuernberger},
+           familyi={N\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod}}}%
+        {{hash=c2409bdefe9509b65ff773f0b537b394}{%
+           family={Proença},
+           familyi={P\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=ce07ab221e4c66f7d649ee6a87c05114}{%
+           family={Reid},
+           familyi={R\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod}}}%
+        {{hash=fe1078aa006b93d45f82ade2b04c7ec9}{%
+           family={Talbot},
+           familyi={T\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod}}}%
+        {{hash=4bc010cff2e285917d046216099375cb}{%
+           family={Georgiev},
+           familyi={G\bibinitperiod},
+           given={N.},
+           giveni={N\bibinitperiod}}}%
+        {{hash=3f077da988529841266e9c5904250bc3}{%
+           family={Pailevanian},
+           familyi={P\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod}}}%
+        {{hash=25ffdeae1505e39164b606223b38c979}{%
+           family={Archanian},
+           familyi={A\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=9ff2fef9d5f3df20b454228aa77ce1fd}{%
+           family={Ambrose},
+           familyi={A\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod}}}%
+        {{hash=d0ad35f1440b4b5d5f376bd38f02432d}{%
+           family={Jasper},
+           familyi={J\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=d887f19985255724da3b2534ec0e985e}{%
+           family={Etheredge},
+           familyi={E\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+        {{hash=a1c8b2cad6688a678736f9807cf2a72d}{%
+           family={Roman},
+           familyi={R\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod}}}%
+        {{hash=1d4ccdaf1537ddc7ef551bca2a114faa}{%
+           family={Levine},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+        {{hash=66f24cfb54b20c30347fa7af1a32d99a}{%
+           family={Otsu},
+           familyi={O\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod}}}%
+        {{hash=6be7a882d7e5cef61acf263b9c16c20a}{%
+           family={Yearicks},
+           familyi={Y\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=8502e4a6d3e9366eefcaec4bdc4ef996}{%
+           family={Melikyan},
+           familyi={M\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod}}}%
+        {{hash=368f749e15e7685aa7a0ef571e721f34}{%
+           family={Rieber},
+           familyi={R\bibinitperiod},
+           given={R.\bibnamedelimi R.},
+           giveni={R\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=533a17cb8d22db4d03ccae48935df742}{%
+           family={Carpenter},
+           familyi={C\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod}}}%
+        {{hash=b6c4db1d1f551f9bd79eea4b7c9c61aa}{%
+           family={Nash},
+           familyi={N\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=b8a48184e3794e3037528773cc004bb8}{%
+           family={Jain},
+           familyi={J\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=2d3a386be7b7beccadb5f798a830b5fe}{%
+           family={Shiraishi},
+           familyi={S\bibinitperiod},
+           given={L.},
+           giveni={L\bibinitperiod}}}%
+        {{hash=a47054238a96962b5fb612812edb5164}{%
+           family={Robinson},
+           familyi={R\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=7b4d8b1335f1907d9817a41f705220da}{%
+           family={Travers},
+           familyi={T\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=7b19175757b2fb9d913a6669ff8278df}{%
+           family={Choset},
+           familyi={C\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod}}}%
+        {{hash=2847c37d7d3ed99f3fbe25bebacca6f6}{%
+           family={Burdick},
+           familyi={B\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=5b35d25b74ba5e90c781422506015559}{%
+           family={Gardner},
+           familyi={G\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=3954bbd165540dc96451ee5830a820d8}{%
+           family={Cable},
+           familyi={C\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=82f93a3aa59453da1666cf7d485d5013}{%
+           family={Ingham},
+           familyi={I\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=9b62d797e60ada5a6bd36e6a0ae04437}{%
+           family={Ono},
+           familyi={O\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{dd98a2f7e9b10e8fb64e4740245dc0b7}
+      \strng{fullhash}{eae68f2247119a3f10f4cc80b531b96f}
+      \strng{bibnamehash}{dd98a2f7e9b10e8fb64e4740245dc0b7}
+      \strng{authorbibnamehash}{dd98a2f7e9b10e8fb64e4740245dc0b7}
+      \strng{authornamehash}{dd98a2f7e9b10e8fb64e4740245dc0b7}
+      \strng{authorfullhash}{eae68f2247119a3f10f4cc80b531b96f}
+      \field{sortinit}{4}
+      \field{sortinithash}{e071e0bcb44634fab398d68ad04e69f4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Ice worlds are at the forefront of astrobiological interest because of the evidence of subsurface oceans. Enceladus in particular is unique among the icy moons because there are known vent systems that are likely connected to a subsurface ocean, through which the ocean water is ejected to space. An existing study has shown that sending small robots into the vents and directly sampling the ocean water is likely possible. To enable such a mission, NASA’s Jet Propulsion Laboratory is developing a snake-like robot called Exobiology Extant Life Surveyor (EELS) that can navigate Enceladus’ extreme surface and descend an erupting vent to capture unaltered liquid samples and potentially reach the ocean. However, navigating to and through Enceladus’ environment is challenging: Because of the limitations of existing orbital reconnaissance, there is substantial uncertainty with respect to its geometry and the physical properties of the surface/vents; communication is limited, which requires highly autonomous robots to execute the mission with limited human supervision. Here, we provide an overview of the EELS project and its development effort to create a risk-aware autonomous robot to navigate these extreme ice terrains/environments. We describe the robot’s architecture and the technical challenges to navigate and sense the icy environment safely and effectively. We focus on the challenges related to surface mobility, task and motion planning under uncertainty, and risk quantification. We provide initial results on mobility and risk-aware task and motion planning from field tests and simulated scenarios. A snake-like robot for navigation in extreme icy terrain, such as that of Enceladus or similar, was developed and tested. There is growing interest in the exploration of icy moons, such as Enceladus, which may have astrobiological implications. However, obtaining samples is challenging because of the environmental extremities on the surface or within ice vents. Vaquero et al. developed a snake-like robot named Exobiology Extant Life Surveyor (EELS) that was capable of autonomously navigating on icy surfaces. EELS has a perception head that contains a series of sensors and cameras to observe its environment, whereas the body has articulated segments for shape-changing and a screw-like outer surface to enable motility. EELS shows potential for risk-aware autonomous exploration of complex icy terrain. —Amos Matsiko}
+      \field{journaltitle}{Science Robotics}
+      \field{number}{88}
+      \field{title}{EELS: Autonomous snake-like robot with task and motion planning capabilities for ice world exploration}
+      \field{volume}{9}
+      \field{year}{2024}
+      \field{pages}{eadh8332}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.1126/scirobotics.adh8332
+      \endverb
+      \verb{eprint}
+      \verb https://www.science.org/doi/pdf/10.1126/scirobotics.adh8332
+      \endverb
+      \verb{urlraw}
+      \verb https://www.science.org/doi/abs/10.1126/scirobotics.adh8332
+      \endverb
+      \verb{url}
+      \verb https://www.science.org/doi/abs/10.1126/scirobotics.adh8332
+      \endverb
+    \endentry
+    \entry{old_snakes}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=19873796407cada54542df304a7876c6}{%
+           family={Hirose},
+           familyi={H\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=d5c1e4a8a7319e4ebd7a1ffb379d40b7}{%
+           family={Mori},
+           familyi={M\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \strng{fullhash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \strng{bibnamehash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \strng{authorbibnamehash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \strng{authornamehash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \strng{authorfullhash}{5f352ec16ebc645fd5fa0515b8ff058f}
+      \field{sortinit}{6}
+      \field{sortinithash}{7851c86048328b027313775d8fbd2131}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2004 IEEE International Conference on Robotics and Biomimetics}
+      \field{title}{Biologically Inspired Snake-like Robots}
+      \field{year}{2004}
+      \field{pages}{1\bibrangedash 7}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1109/ROBIO.2004.1521742
+      \endverb
+      \keyw{Robots;Propulsion;Biological information theory;Shape;Magnetooptic recording;Prototypes;Biological system modeling;Rough surfaces;Surface roughness;Reliability engineering}
+    \endentry
+    \entry{state_est_snake_robots}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=751e8a8cb7eeb3fc179bcc12141c1117}{%
+           family={Rollinson},
+           familyi={R\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+        {{hash=eea0959d5051bc2aa089378e416bacfd}{%
+           family={Buchan},
+           familyi={B\bibinitperiod},
+           given={Austin},
+           giveni={A\bibinitperiod}}}%
+        {{hash=72811108dcbc25428de5c7e317f511ed}{%
+           family={Choset},
+           familyi={C\bibinitperiod},
+           given={Howie},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{898575904f8130af39e6a9f73d3afda4}
+      \strng{fullhash}{898575904f8130af39e6a9f73d3afda4}
+      \strng{bibnamehash}{898575904f8130af39e6a9f73d3afda4}
+      \strng{authorbibnamehash}{898575904f8130af39e6a9f73d3afda4}
+      \strng{authornamehash}{898575904f8130af39e6a9f73d3afda4}
+      \strng{authorfullhash}{898575904f8130af39e6a9f73d3afda4}
+      \field{sortinit}{7}
+      \field{sortinithash}{f615fb9c6fba11c6f962fb3fd599810e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2011 IEEE/RSJ International Conference on Intelligent Robots and Systems}
+      \field{title}{State estimation for snake robots}
+      \field{year}{2011}
+      \field{pages}{1075\bibrangedash 1080}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/IROS.2011.6095052
+      \endverb
+    \endentry
+    \entry{snake_paper2}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=eab687571d9b9d8aa616ae93220e3d17}{%
+           family={Rollinson},
+           familyi={R\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+        {{hash=7b19175757b2fb9d913a6669ff8278df}{%
+           family={Choset},
+           familyi={C\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod}}}%
+        {{hash=ee5eb40b41ed0548920d1fd4998edff1}{%
+           family={Tully},
+           familyi={T\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{831cc40d847b3cf83b0d74328db9013d}
+      \strng{fullhash}{831cc40d847b3cf83b0d74328db9013d}
+      \strng{bibnamehash}{831cc40d847b3cf83b0d74328db9013d}
+      \strng{authorbibnamehash}{831cc40d847b3cf83b0d74328db9013d}
+      \strng{authornamehash}{831cc40d847b3cf83b0d74328db9013d}
+      \strng{authorfullhash}{831cc40d847b3cf83b0d74328db9013d}
+      \field{sortinit}{1}
+      \field{sortinithash}{50c6687d7fc80f50136d75228e3c59ba}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of ASME Dynamic Systems and Control Conference (DSCC '13)}
+      \field{month}{10}
+      \field{title}{Robust State Estimation with Redundant Proprioceptive Sensors}
+      \field{volume}{3}
+      \field{year}{2013}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

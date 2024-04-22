@@ -362,7 +362,7 @@ class SnakeRobot:
             draw_frame(self.debug_items, "Virtual Chassis", T_virtual_chassis_wrt_world)
 
     def draw_accel_vectors_in_world(self, accel_in_links, color: list, label: str):
-        vis_factor = 5
+        vis_factor = 10
         for i in range(self.n_links):
             accel_in_world = self.link_to_worlds[i] @ accel_in_links[3*i:3*(i+1)]
             draw_line(self.debug_items, f"{i}_accel_{label}", self.link_positions[i], self.link_positions[i] + accel_in_world / vis_factor, color)

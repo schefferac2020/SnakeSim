@@ -4,7 +4,7 @@
 Michigan Rob530 Final Project by [Riley Bridges](https://github.com/rbridges12), [Quintin Dwight](https://github.com/qhdwight), [Christian Foreman](https://github.com/ChristianForeman), and [Drew Scheffer](https://github.com/schefferac2020)
 
 <div style="text-align:center;">
-    <a href="https://www.example.com">Paper TODO</a>
+    <a href="/latex/report.pdf">Paper</a>
     |
     <a href="https://www.youtube.com/watch?v=Mj-DBzjO0Z0">Video</a>
     |
@@ -44,4 +44,4 @@ $ python3 run_sim.py
     <img src="./media/diagram.png" alt="Image Description">
 </div>
 
-For more details, please refer to our [TODO paper](dkljafkjsdhf).
+For more details, please refer to our [paper](/latex/report.pdf).
